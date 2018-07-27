@@ -1,5 +1,6 @@
 load('sbbsdefs.js');
 load('nodedefs.js');
+require('../../common/validate.js', 'coa_validate');
 
 /**
  * An interface to the COA Presence database
@@ -57,9 +58,9 @@ Presence.prototype._handle_update = function (data, system, node) {
 Presence.prototype.read = function (system, node) {
 
   var path = 'presence';
-  if (typeof system == 'string' && system.length && system.length <= LEN_ALIAS) {
+  if (coa_validate.alias(system)) {
     path += '.' + system;
-    if (typeof node == 'number' && node >= 0 && node <= 255) {
+    if (coa_validate.node_number(node)) {
       path += '.' + node;
     } else if (typeof node != 'undefined') {
       throw 'Presence: invalid [node] parameter ' + node + '.'
@@ -102,9 +103,9 @@ Presence.prototype.write = function (node) {
 Presence.prototype.subscribe = function (system, node, callback) {
 
   var path = 'presence';
-  if (typeof system == 'string') {
+  if (coa_validate.alias(system)) {
     path += '.' + system;
-    if (typeof node == 'number') {
+    if (coa_validate.node_number(node)) {
       path += '.' + node;
     }
   }

@@ -1,5 +1,6 @@
 load('nodedefs.js');
 load('sbbsdefs.js');
+require('../../common/validate.js', 'coa_validate');
 
 this.QUERY = function (client, packet) {
 
@@ -37,24 +38,19 @@ this.QUERY = function (client, packet) {
     if (
       // Update location must be [system_name].[node_number]
       loc.length == 2
-      && !isNaN(parseInt(loc[1])) && loc[1] >= 0 && loc[1] <= 255
+      && coa_validate.node_number(loc[1])
       // Must be an object and not a primitive for the following checks to work
       && typeof packet.data == 'object'
       // Must include a valid NodeStatus index (nodedefs.js)
-      && typeof packet.data.s == 'number'
-      && packet.data.s >= NODE_WFC
-      && packet.data.s <= NODE_LAST_STATUS
+      && coa_validate.node_status(packet.data.s)
       // Must include a valid NodeAction index (nodedefs.js)
-      && typeof packet.data.a == 'number'
-      && packet.data.a >= NODE_MAIN
-      && packet.data.a <= NODE_LAST_ACTION
+      && coa_validate.node_action(packet.data.a)
       // Must include a valid user alias or empty string
-      && typeof packet.data.u == 'string'
-      && packet.data.u.length <= LEN_ALIAS
+      && coa_validate.alias(packet.data.u)
       // May include a custom status string up to 50 characters long
       && (
         typeof packet.data.u == 'undefined'
-        || (typeof packet.data.u == 'string' && packet.data.u.length <= 50)
+        || coa_validate.node_status_custom(packet.data.c)
       )
       // Update cannot contain extraneous properties
       && Object.keys(data).every(function (e) {
