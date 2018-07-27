@@ -108,17 +108,19 @@ Write presence data for a given node, or the entire system
 <a name="Presence+subscribe"></a>
 
 ### presence.subscribe(callback, [system], [node]) ⇒ <code>number</code>
-Subscribe to updates from all systems, one system, or one node of one system<br>
+Subscribe to updates from all systems, one system, or a node of a system<br>
 If no [system] is given, subscribes all updates (top-level subscription)<br>
-If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)<br>
-If given [system] and [node], subscribes to all updates for [node] on [system] (node-level subscription)
+If given [system] but no [node], subscribes to all updates from [system]
+(system-level subscription)<br>
+If given [system] and [node], subscribes to all updates for [node] on
+[system] (node-level subscription)
 
 **Kind**: instance method of [<code>Presence</code>](#Presence)  
 **Returns**: <code>number</code> - Subscription ID, for use with presence.unsubscribe  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| callback | <code>function</code> | A function to handle these updates |
+| callback | <code>function</code> | A function to handle these updates<br> Receives an object containing everything that changed in this update.<br> If we previously had no presence data for this scope, the update will contain all presence data for this scope. |
 | [system] | <code>string</code> | A particular system (optional) |
 | [node] | <code>number</code> | A node of [system] (optional) |
 
