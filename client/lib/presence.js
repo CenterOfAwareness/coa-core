@@ -2,6 +2,21 @@ load('sbbsdefs.js');
 load('nodedefs.js');
 require('../../common/validate.js', 'coa_validate');
 
+function get_path(system, node) {
+  var path = 'presence';
+  if (coa_validate.alias(system)) {
+    path += '.' + system;
+    if (coa_validate.node_number(node)) {
+      path += '.' + node;
+    } else if (typeof node != 'undefined') {
+      throw new Error('Presence: invalid [node] parameter ' + node + '.');
+    }
+  } else if (typeof system != 'undefined') {
+    throw new Error('Presence: invalid [system] parameter ' + system + '.');
+  }
+  return path;
+}
+
 /**
  * An interface to the COA Presence database
  * @constructor
@@ -10,12 +25,10 @@ require('../../common/validate.js', 'coa_validate');
 function Presence(coa) {
 
   const state = {};
-  const callbacks = {};
   const node_status = system.node_list.map(function (e) { return ''; });
 
   Object.defineProperty(this, 'coa', { value : coa });
   Object.defineProperty(this, 'state', { value : state, enumerable : true });
-  Object.defineProperty(this, 'callbacks', { value : callbacks });
   Object.defineProperty(this, 'node_status', {
     value : node_status, enumerable : true
   });
@@ -56,24 +69,11 @@ Presence.prototype._handle_update = function (data, system, node) {
  * @returns {(object|null)} The requested presence data, or null if unavailable
  */
 Presence.prototype.read = function (system, node) {
-
-  var path = 'presence';
-  if (coa_validate.alias(system)) {
-    path += '.' + system;
-    if (coa_validate.node_number(node)) {
-      path += '.' + node;
-    } else if (typeof node != 'undefined') {
-      throw new Error('Presence: invalid [node] parameter ' + node + '.');
-    }
-  } else if (typeof system != 'undefined') {
-    throw new Error('Presence: invalid [system] parameter ' + system + '.');
-  }
-
+  const path = get_path(system, node);
   const data = this.coa.client.read('presence', path, 1);
   if (!data) return null;
   this._handle_update(data, system, node);
   return this.state;
-
 }
 
 /**
@@ -100,18 +100,12 @@ Presence.prototype.write = function (node) {
   }
 }
 
-Presence.prototype.subscribe = function (system, node, callback) {
+Presence.prototype.subscribe = function (callback, system, node) {
+  const path = get_path(system, node);
+  return this.coa.subscribe('presence', path, callback);
+}
 
-  var path = 'presence';
-  if (coa_validate.alias(system)) {
-    path += '.' + system;
-    if (coa_validate.node_number(node)) {
-      path += '.' + node;
-    } else if (typeof node != 'undefined') {
-      throw new Error('Presence: invalid [node] parameter');
-    }
-  } else if (typeof system != 'undefined') {
-    throw new Error('Presence: invalid [system] parameter');
-  }
-
+Presence.prototype.unsubscribe = function (id, system, node) {
+  const path = get_path(system, node);
+  return this.coa.unsubscribe('presence', path, id);
 }

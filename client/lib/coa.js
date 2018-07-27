@@ -38,9 +38,11 @@ function COA(host, port, username, password) {
  */
 COA.prototype.subscribe = function (db, path, callback) {
   if (typeof this.callbacks[db] == 'undefined') this.callbacks[db] = {};
-  if (typeof this.callbacks[db][path] == 'undefined') this.callbacks[db][path] = [];
+  if (typeof this.callbacks[db][path] == 'undefined') {
+    this.callbacks[db][path] = [];
+    this.client.subscribe(db, path);
+  }
   this.callbacks[db][path].push(callback);
-  this.client.subscribe(db, path);
   return (this.callbacks[db][path].length - 1);
 }
 
@@ -52,18 +54,40 @@ COA.prototype.subscribe = function (db, path, callback) {
  * @returns {undefined}
  */
 COA.prototype.unsubscribe = function (db, path, id) {
-  // need to make the 'unsubscribe all' things
-  if (
-    typeof this.callbacks[db][path] == 'undefined'
-    || this.callbacks[db][path].length <= id
-    || this.callbacks[db][path] == null
+
+  const self = this;
+
+  function unsubscribe_all(db, path) {
+    if (self.callbacks[db] && self.callbacks[db][path]) {
+      self.client.unsubscribe(db, path);
+      delete self.callbacks[db][path];
+    }
+  }
+
+  if (!db) {
+    Object.keys(this.callbacks).forEach(function (e) {
+      Object.keys(this.callbacks[e]).forEach(function (ee) {
+        unsubscribe_all(e, ee);
+      });
+    });
+    this.callbacks = {};
+  } else if (!path && this.callbacks[db]) {
+    Object.keys(this.callbacks[db]).forEach(function (e) {
+      unsubscribe_all(db, e);
+    });
+    delete this.callbacks[db];
+  } else if (typeof id != 'number') {
+    unsubscribe_all(db, path);
+  } else if (
+    this.callbacks[db]
+    && this.callbacks[db][path]
+    && this.callbacks[db][path].length > id
   ) {
-    throw format('Cannot remove %s.%s callback %s: invalid id', db, path, id);
+    this.callbacks[db][path].splice(id, 1, null);
+    if (this.callbacks[db][path].every(function (e) { return e == null; })) {
+      delete this.callbacks[db][path];
+      this.client.unsubscribe(db, path);
+    }
   }
-  this.callbacks[db][path].splice(id, 1, null);
-  if (this.callbacks[db][path].every(function (e) { return e == null; })) {
-    delete this.callbacks[db][path];
-    if (!Object.keys(this.callbacks[db]).length) delete this.callbacks[db];
-    this.client.unsubscribe(db, path);
-  }
+
 }
