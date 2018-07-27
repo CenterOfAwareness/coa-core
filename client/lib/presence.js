@@ -63,10 +63,10 @@ Presence.prototype.read = function (system, node) {
     if (coa_validate.node_number(node)) {
       path += '.' + node;
     } else if (typeof node != 'undefined') {
-      throw 'Presence: invalid [node] parameter ' + node + '.'
+      throw new Error('Presence: invalid [node] parameter ' + node + '.');
     }
   } else if (typeof system != 'undefined') {
-    throw 'Presence: invalid [system] parameter ' + system + '.';
+    throw new Error('Presence: invalid [system] parameter ' + system + '.');
   }
 
   const data = this.coa.client.read('presence', path, 1);
@@ -107,7 +107,11 @@ Presence.prototype.subscribe = function (system, node, callback) {
     path += '.' + system;
     if (coa_validate.node_number(node)) {
       path += '.' + node;
+    } else if (typeof node != 'undefined') {
+      throw new Error('Presence: invalid [node] parameter');
     }
+  } else if (typeof system != 'undefined') {
+    throw new Error('Presence: invalid [system] parameter');
   }
 
 }
