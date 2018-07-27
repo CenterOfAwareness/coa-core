@@ -120,7 +120,7 @@ If given [system] and [node], subscribes to all updates for [node] on
 
 | Param | Type | Description |
 | --- | --- | --- |
-| callback | <code>function</code> | A function to handle these updates<br> Receives an object containing everything that changed in this update.<br> If we previously had no presence data for this scope, the update will contain all presence data for this scope. |
+| callback | <code>function</code> | Receives an object containing everything that changed in this update.<br> If we previously had no presence data for this scope, the object will contain all presence data for this scope. |
 | [system] | <code>string</code> | A particular system (optional) |
 | [node] | <code>number</code> | A node of [system] (optional) |
 

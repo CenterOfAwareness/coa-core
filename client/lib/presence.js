@@ -154,9 +154,9 @@ Presence.prototype.write = function (node) {
  * (system-level subscription)<br>
  * If given [system] and [node], subscribes to all updates for [node] on
  * [system] (node-level subscription)
- * @param {function} callback - A function to handle these updates<br>
- * Receives an object containing everything that changed in this update.<br>
- * If we previously had no presence data for this scope, the update will contain
+ * @param {function} callback - Receives an object containing everything that
+ * changed in this update.<br>
+ * If we previously had no presence data for this scope, the object will contain
  * all presence data for this scope.
  * @param {string} [system=undefined] - A particular system (optional)
  * @param {number} [node=undefined] - A node of [system] (optional)
