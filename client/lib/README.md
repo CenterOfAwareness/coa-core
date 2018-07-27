@@ -68,6 +68,8 @@ Unsubscribe from updates
     * [new Presence(coa)](#new_Presence_new)
     * [.read([system], [node])](#Presence+read) ⇒ <code>object</code> \| <code>null</code>
     * [.write([node])](#Presence+write) ⇒ <code>undefined</code>
+    * [.subscribe(callback, [system], [node])](#Presence+subscribe) ⇒ <code>number</code>
+    * [.unsubscribe([id], [system], [node])](#Presence+unsubscribe) ⇒ <code>undefined</code>
 
 <a name="new_Presence_new"></a>
 
@@ -103,3 +105,43 @@ Write presence data for a given node, or the entire system
 | --- | --- | --- |
 | [node] | <code>number</code> | The node to send an update about (optional) |
 
+<a name="Presence+subscribe"></a>
+
+### presence.subscribe(callback, [system], [node]) ⇒ <code>number</code>
+Subscribe to updates from all systems, one system, or one node of one system
+If no [system] is given, subscribes all updates (top-level subscription)
+If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)
+If given [system] and [node], subscribes to all updates for [node] on [system] (node-level subscription)
+
+**Kind**: instance method of [<code>Presence</code>](#Presence)  
+**Returns**: <code>number</code> - Subscription ID, for use with presence.unsubscribe  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>function</code> | A function to handle these updates |
+| [system] | <code>string</code> | A particular system (optional) |
+| [node] | <code>number</code> | A node of [system] (optional) |
+
+<a name="Presence+unsubscribe"></a>
+
+### presence.unsubscribe([id], [system], [node]) ⇒ <code>undefined</code>
+Unsubscribe from updates
+If no [id] given, unsubscribes from all updates
+Subscription IDs are not globally unique. They are scoped to the top, system, or node-level
+If given [id] but no [system], [id] must refer to a top-level subscription
+If given [id] and [system], but no [node], [id] must refer to a system-level subscription
+If given [id], [system], and [node], [id] must refer to a node-level subscription
+
+**Kind**: instance method of [<code>Presence</code>](#Presence)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [id] | <code>number</code> | ID of the subscription to remove (from presence.subscribe) |
+| [system] | <code>string</code> | system this subscribtion is associated with |
+| [node] | <code>number</code> | node of [system] this subscription is associated with |
+
+**Example**  
+```js
+const id = presence.subscribe(some_callback, 'ecbbs', 0);
+presence.unsubscribe(id, 'ecbbs', 0);
+```
