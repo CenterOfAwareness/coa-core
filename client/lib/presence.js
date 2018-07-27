@@ -101,9 +101,9 @@ Presence.prototype.write = function (node) {
 }
 
 /**
- * Subscribe to updates from all systems, one system, or one node of one system
- * If no [system] is given, subscribes all updates (top-level subscription)
- * If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)
+ * Subscribe to updates from all systems, one system, or one node of one system<br>
+ * If no [system] is given, subscribes all updates (top-level subscription)<br>
+ * If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)<br>
  * If given [system] and [node], subscribes to all updates for [node] on [system] (node-level subscription)
  * @param {function} callback - A function to handle these updates
  * @param {string} [system=undefined] - A particular system (optional)
@@ -116,11 +116,11 @@ Presence.prototype.subscribe = function (callback, system, node) {
 }
 
 /**
- * Unsubscribe from updates
- * If no [id] given, unsubscribes from all updates
- * Subscription IDs are not globally unique. They are scoped to the top, system, or node-level
- * If given [id] but no [system], [id] must refer to a top-level subscription
- * If given [id] and [system], but no [node], [id] must refer to a system-level subscription
+ * Unsubscribe from updates<br>
+ * If no [id] given, unsubscribes from all updates<br>
+ * Subscription IDs are not globally unique. They are scoped to the top, system, or node-level<br>
+ * If given [id] but no [system], [id] must refer to a top-level subscription<br>
+ * If given [id] and [system], but no [node], [id] must refer to a system-level subscription<br>
  * If given [id], [system], and [node], [id] must refer to a node-level subscription
  * @param {number} [id=undefined] - ID of the subscription to remove (from presence.subscribe)
  * @param {string} [system=undefined] - system this subscribtion is associated with

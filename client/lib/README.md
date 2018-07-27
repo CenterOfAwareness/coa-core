@@ -108,9 +108,9 @@ Write presence data for a given node, or the entire system
 <a name="Presence+subscribe"></a>
 
 ### presence.subscribe(callback, [system], [node]) ⇒ <code>number</code>
-Subscribe to updates from all systems, one system, or one node of one system
-If no [system] is given, subscribes all updates (top-level subscription)
-If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)
+Subscribe to updates from all systems, one system, or one node of one system<br>
+If no [system] is given, subscribes all updates (top-level subscription)<br>
+If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)<br>
 If given [system] and [node], subscribes to all updates for [node] on [system] (node-level subscription)
 
 **Kind**: instance method of [<code>Presence</code>](#Presence)  
@@ -125,11 +125,11 @@ If given [system] and [node], subscribes to all updates for [node] on [system] (
 <a name="Presence+unsubscribe"></a>
 
 ### presence.unsubscribe([id], [system], [node]) ⇒ <code>undefined</code>
-Unsubscribe from updates
-If no [id] given, unsubscribes from all updates
-Subscription IDs are not globally unique. They are scoped to the top, system, or node-level
-If given [id] but no [system], [id] must refer to a top-level subscription
-If given [id] and [system], but no [node], [id] must refer to a system-level subscription
+Unsubscribe from updates<br>
+If no [id] given, unsubscribes from all updates<br>
+Subscription IDs are not globally unique. They are scoped to the top, system, or node-level<br>
+If given [id] but no [system], [id] must refer to a top-level subscription<br>
+If given [id] and [system], but no [node], [id] must refer to a system-level subscription<br>
 If given [id], [system], and [node], [id] must refer to a node-level subscription
 
 **Kind**: instance method of [<code>Presence</code>](#Presence)  
