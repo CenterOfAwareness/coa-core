@@ -50,16 +50,63 @@ Presence.prototype._get_local_presence = function (node) {
 }
 
 Presence.prototype._handle_update = function (data, system, node) {
+  const self = this;
+  var diff = {}; // Will contain any changes from the previous state
   if (system) { // This update pertains to just one system
-    if (typeof this.state[system] != 'object') this.state[system] = {};
     if (typeof node == 'number') { // This update pertains to a particular node
+      if (typeof this.state[system] != 'object') { // We have no data about this system
+        this.state[system] = {};
+        diff = data;
+      } else if (typeof this.state[system][node] != 'object') { // We have no data about this node
+        diff = data;
+      } else { // We have data about this node but some of it may have changed
+        Object.keys(data).forEach(function (e) {
+          if (data[e] != self.state[system][node][e]) diff[e] = data[e];
+        });
+      }
       this.state[system][node] = data;
     } else { // This update contains all presence data for [system]
+      if (typeof this.state[system] != 'object') { // We have no data about this system
+        diff = data;
+      } else {
+        Object.keys(data).forEach(function (e) { // Each node
+          if (typeof self.state[system][e] != 'object') { // We have no data about this node
+            diff[e] = data[e];
+          } else { // We have data about this node but some of it may have changed
+            Object.keys(data[e]).forEach(function (ee) { // Each property of this node
+              if (self.state[system][e][ee] != data[e][ee]) {
+                if (typeof diff[e][ee] == 'undefined') diff[e][ee] = {};
+                diff[e][ee] = data[e][ee];
+              }
+            });
+          }
+        });
+      }
       this.state[system] = data;
     }
   } else { // This update contains all presence data
+    Object.keys(data).forEach(function (e) { // Each system
+      if (typeof self.state[e] == 'undefined') { // We currently have no data about this system
+        diff[e] = data[e];
+      } else {
+        Object.keys(data[e]).forEach(function (ee) { // Each node
+          if (typeof self.state[e][ee] == 'undefined') { // We currently have no data about this node
+            if (typeof diff[e] == 'undefined') diff[e] = {};
+            diff[e][ee] = data[e][ee];
+          } else {
+            Object.keys(data[e][ee]).forEach(function (eee) { // Each property of this node
+              if (self.state[e][ee][eee] != data[e][ee][eee]) {
+                if (typeof diff[e][ee] == 'undefined') diff[e][ee] = {};
+                diff[e][ee][eee] = data[e][ee][eee];
+              }
+            });
+          }
+        });
+      }
+    });
     this.state = data;
   }
+  return diff;
 }
 
 /**
@@ -101,18 +148,27 @@ Presence.prototype.write = function (node) {
 }
 
 /**
- * Subscribe to updates from all systems, one system, or one node of one system<br>
+ * Subscribe to updates from all systems, one system, or a node of a system<br>
  * If no [system] is given, subscribes all updates (top-level subscription)<br>
- * If given [system] but no [node], subscribes to all updates from [system] (system-level subscription)<br>
- * If given [system] and [node], subscribes to all updates for [node] on [system] (node-level subscription)
- * @param {function} callback - A function to handle these updates
+ * If given [system] but no [node], subscribes to all updates from [system]
+ * (system-level subscription)<br>
+ * If given [system] and [node], subscribes to all updates for [node] on
+ * [system] (node-level subscription)
+ * @param {function} callback - A function to handle these updates<br>
+ * Receives an object containing everything that changed in this update.<br>
+ * If we previously had no presence data for this scope, the update will contain
+ * all presence data for this scope.
  * @param {string} [system=undefined] - A particular system (optional)
  * @param {number} [node=undefined] - A node of [system] (optional)
  * @returns {number} Subscription ID, for use with presence.unsubscribe
  */
 Presence.prototype.subscribe = function (callback, system, node) {
+  const self = this;
   const path = get_path(system, node);
-  return this.coa.subscribe('presence', path, callback);
+  return this.coa.subscribe('presence', path, function (update) {
+    const diff = self._handle_update(update.data, system, node);
+    callback(diff);
+  });
 }
 
 /**
