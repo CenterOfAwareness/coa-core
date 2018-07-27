@@ -22,6 +22,19 @@ const coa_validate = {
 
   node_status_custom : function (v) {
     return typeof v == 'string' && v.length <= 50
+  },
+
+  presence_node_update : function (v) {
+    return (
+      typeof v == 'object'
+      && this.node_status(v.s)
+      && this.node_action(v.a)
+      && this.alias(v.u)
+      && (typeof v.c == 'undefined' || this.node_status_custom(v.c))
+      && Object.keys(v).every(function (e) {
+        ['s','a','u','c'].indexOf(e) > -1;
+      })
+    );
   }
 
 };
