@@ -20,6 +20,8 @@ function COA(host, port, username, password) {
     callbacks[u.scope][u.location].forEach(function (e) { e(u); });
   }
 
+  json_client.ident('admin', username, password);
+
   /** @property {JSONClient}
    * @name COA#client
    */

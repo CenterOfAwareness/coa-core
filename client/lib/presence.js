@@ -1,9 +1,9 @@
 load('sbbsdefs.js');
 load('nodedefs.js');
-require('../../common/validate.js', 'coa_validate');
+require('../mods/coa/common/validate.js', 'coa_validate');
 
 function get_path(system, node) {
-  var path = 'presence';
+  var path = 'coa_presence';
   if (coa_validate.alias(system)) {
     path += '.' + system;
     if (coa_validate.node_number(node)) {
@@ -42,11 +42,12 @@ Presence.prototype._get_local_presence = function (node) {
     u : '',
     c : this.node_status[node]
   };
-  if (ret[s] == NODE_INUSE || ret[s] == NODE_QUIET) {
+  if (ret.s == NODE_INUSE || ret.s == NODE_QUIET) {
     var usr = new User(system.node_list[node].useron);
-    ret[u] = usr.alias;
+    ret.u = usr.alias;
     usr = undefined;
   }
+  return ret;
 }
 
 Presence.prototype._handle_update = function (data, system, node) {
@@ -117,7 +118,7 @@ Presence.prototype._handle_update = function (data, system, node) {
  */
 Presence.prototype.read = function (system, node) {
   const path = get_path(system, node);
-  const data = this.coa.client.read('presence', path, 1);
+  const data = this.coa.client.read('coa_presence', path, 1);
   if (!data) return null;
   this._handle_update(data, system, node);
   return this.state;
@@ -130,20 +131,24 @@ Presence.prototype.read = function (system, node) {
  */
 Presence.prototype.write = function (node) {
   const self = this;
+  var obj;
   var path = 'presence.' + this.coa.system_name;
+  if (typeof this.state[this.coa.system_name] != 'object') {
+    this.state[this.coa.system_name] = {};
+  }
   if (typeof node == 'number') { // We're sending an update about one node
     path += '.' + node;
-    const obj = this._get_local_presence(node);
+    obj = this._get_local_presence(node);
     this.state[this.coa.system_name][node] = obj;
-    this.coa.write('presence', path, this._get_local_presence(node), 2);
+    this.coa.write('coa_presence', path, this._get_local_presence(node), 2);
   } else { // We're pushing data for all nodes
-    const obj = {};
+    obj = {};
     system.node_list.forEach(function (e, i) {
       const _obj = self._get_local_presence(i);
       self.state[self.coa.system_name][i] = _obj;
       obj[i] = _obj;
     });
-    this.coa.write('presence', path, obj, 2);
+    this.coa.client.write('coa_presence', path, obj, 2);
   }
 }
 
@@ -165,7 +170,7 @@ Presence.prototype.write = function (node) {
 Presence.prototype.subscribe = function (callback, system, node) {
   const self = this;
   const path = get_path(system, node);
-  return this.coa.subscribe('presence', path, function (update) {
+  return this.coa.subscribe('coa_presence', path, function (update) {
     const diff = self._handle_update(update.data, system, node);
     callback(diff);
   });
@@ -188,5 +193,5 @@ Presence.prototype.subscribe = function (callback, system, node) {
  */
 Presence.prototype.unsubscribe = function (id, system, node) {
   const path = get_path(system, node);
-  return this.coa.unsubscribe('presence', path, id);
+  return this.coa.unsubscribe('coa_presence', path, id);
 }
