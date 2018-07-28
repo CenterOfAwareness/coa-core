@@ -66,8 +66,9 @@ this.QUERY = function (client, packet) {
         alias, packet.location, client.remote_ip_address
       ));
     }
+    return ret;
   }
 
-  return ret; // Request can proceed
+  return false; // Request can proceed
 
 }
