@@ -7,6 +7,11 @@ const coa_validate = {
     return typeof v == 'string' && v.length > 0 && v.length <= LEN_ALIAS;
   },
 
+  alias_exists : function (v) {
+    if (!this.alias(v)) return false;
+    return (system.matchuser(v) > 0); // Could also check that user isn't deleted/disabled
+  },
+
   node_number : function (v) {
     const _v = parseInt(v); // May be an object's key
     return typeof !isNaN(_v) && _v >= 0 && _v <= 255;

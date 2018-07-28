@@ -53,7 +53,9 @@ this.QUERY = function (client, packet) {
     var ret = false;
     if (loc.length > 3) {
       ret = true;
-    } else if (!coa_validate.alias(loc[1])) {
+    } else if (
+      !coa_validate.alias(loc[1]) || !coa_validate.alias_exists(loc[1])
+    ) {
       ret = true;
     } else if (loc.length == 3 && !coa_validate.node_number(loc[2])) {
       ret = true;
