@@ -50,10 +50,10 @@ Presence.prototype._get_local_presence = function (node) {
   return ret;
 }
 
-Presence.prototype._handle_update = function (data) {
+Presence.prototype._handle_update = function (update, callback) {
+
   const self = this;
-  var diff = {}; // Will contain any changes from the previous state
-  return diff;
+
 }
 
 /**
@@ -64,10 +64,7 @@ Presence.prototype._handle_update = function (data) {
  */
 Presence.prototype.read = function (system, node) {
   const path = get_path(system, node);
-  const data = this.coa.client.read('coa_presence', path, 1);
-  if (!data) return null;
-  this._handle_update(data);
-  return this.state;
+  return this.coa.client.read('coa_presence', path, 1);
 }
 
 /**
@@ -106,9 +103,11 @@ Presence.prototype.write = function (node) {
  */
 Presence.prototype.subscribe = function (callback) {
   const self = this;
+  const state = this.coa.client.read('coa_presence', 'coa_presence', 1);
+  if (!state) throw new Error('Presence: failed to initialize data');
+  Object.keys(state).forEach(function (e) { self.state[e] = state[e]; });
   return this.coa.subscribe('coa_presence', function (update) {
-    const diff = self._handle_update(update.data);
-    callback(diff);
+    self._handle_update(update, callback);
   });
 }
 
