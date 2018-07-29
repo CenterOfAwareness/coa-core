@@ -83,17 +83,36 @@ Presence.prototype._handle_update = function (update, callback) {
       cb_data[loc[1]][loc[2]] = update.data;
       callback({ type : 'node_update', data : cb_data });
     } else {
-      // Identify changes
-      // fire callback once for each type of change
-      // user logon, node status change, node action change, node custom status change
+      const cb_data = [{ type : 'node_update', data : {} }];
+      cb_data[0].data[loc[1]] = {};
+      cb_data[0].data[loc[1]][loc[2]] = update.data;
+      if (data.s == 3 && self.state[loc[1]][loc[2]].s != 3) {
+        cb_data.push({ type : 'node_logon', data : {
+          system : loc[1],
+          node : loc[2],
+          user : data.u
+        }});
+      }
       this.state[loc[1]][loc[2]] = update.data;
+      cb_data.forEach(callback);
     }
   // coa_presence[system][node][s,a,u,c] - Single attribute being updated
-  } else if (loc.length == 4) {
-    if (self.state[loc[1]][loc[2]][loc[3]] != update.data) {
-      // Identify change type and fire callback with relevant type id
+  } else if (
+    loc.length == 4 && self.state[loc[1]][loc[2]][loc[3]] != update.data
+  ) {
+    const cb_data = [{ type : 'node_update', data : {} }];
+    cb_data[0].data[loc[1]] = {};
+    cb_data[0].data[loc[1]][loc[2]] = {};
+    cb_data[0].data[loc[1]][loc[2]][loc[3]] = update.data;
+    if (loc[3] == 's' && update.data == 3) {
+      cb_data.push({ type : 'node_logon', data : {
+        system : loc[1],
+        node : loc[2],
+        user : this.state[loc[1]][loc[2]].u
+      }});
     }
     this.state[loc[1]][loc[2]][loc[3]] = update.data;
+    cb_data.forEach(callback);
   }
 }
 
@@ -144,7 +163,7 @@ Presence.prototype.write = function (node) {
  */
 Presence.prototype.subscribe = function (callback) {
   const self = this;
-  const state = this.coa.client.read('coa_presence', 'coa_presence', 1);
+  const state = this.read();
   if (!state) throw new Error('Presence: failed to initialize data');
   Object.keys(state).forEach(function (e) { self.state[e] = state[e]; });
   return this.coa.subscribe('coa_presence', function (update) {
