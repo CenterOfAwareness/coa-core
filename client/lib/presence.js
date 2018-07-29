@@ -62,28 +62,28 @@ Presence.prototype._handle_update = function (update, callback) {
   // coa_presence[system] - Probably a new system being added to the DB
   } else if (loc.length == 2) {
     this.state[loc[1]] = update.data;
-    const cb_data = {};
+    var cb_data = {};
     cb_data[loc[1]] = update.data
     callback({ type : 'system_update', data : cb_data });
   // coa presece[system][node] - Should contain all node attributes
   } else if (loc.length == 3) {
     // If we have no data about this system
-    if (!this.state[loc[1]) {
+    if (!this.state[loc[1]]) {
       this.state[loc[1]] = {};
       this.state[loc[1]][loc[2]] = update.data;
-      const cb_data = {};
+      var cb_data = {};
       cb_data[loc[1]] = {};
       cb_data[loc[1]][loc[2]] = update.data;
       callback({ type : 'system_update', data : cb_data });
     // If we have no data about this node
     } else if (!this.state[loc[1]][loc[2]]) {
       this.state[loc[1]][loc[2]] = update.data;
-      const cb_data = {};
+      var cb_data = {};
       cb_data[loc[1]] = {};
       cb_data[loc[1]][loc[2]] = update.data;
       callback({ type : 'node_update', data : cb_data });
     } else {
-      const cb_data = [{ type : 'node_update', data : {} }];
+      var cb_data = [{ type : 'node_update', data : {} }];
       cb_data[0].data[loc[1]] = {};
       cb_data[0].data[loc[1]][loc[2]] = update.data;
       if (data.s == 3 && self.state[loc[1]][loc[2]].s != 3) {
@@ -100,7 +100,7 @@ Presence.prototype._handle_update = function (update, callback) {
   } else if (
     loc.length == 4 && self.state[loc[1]][loc[2]][loc[3]] != update.data
   ) {
-    const cb_data = [{ type : 'node_update', data : {} }];
+    var cb_data = [{ type : 'node_update', data : {} }];
     cb_data[0].data[loc[1]] = {};
     cb_data[0].data[loc[1]][loc[2]] = {};
     cb_data[0].data[loc[1]][loc[2]][loc[3]] = update.data;
