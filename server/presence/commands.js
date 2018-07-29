@@ -17,7 +17,7 @@ this.QUERY = function (client, packet) {
   const loc = packet.location.split('.');
   const alias = admin.authenticated[client.id].alias;
 
-  if (loc[0] != 'presence' || allowed_operations.indexOf(packet.oper) < 0) {
+  if (loc[0] != 'coa_presence' || allowed_operations.indexOf(packet.oper) < 0) {
     log(LOG_INFO, format(
       'Presence: %s tried %s on %s from %s',
       alias, packet.oper, packet.location, client.remote_ip_address
