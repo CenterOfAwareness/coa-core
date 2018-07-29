@@ -51,9 +51,50 @@ Presence.prototype._get_local_presence = function (node) {
 }
 
 Presence.prototype._handle_update = function (update, callback) {
-
-  const self = this;
-
+  cosnt self = this;
+  const loc = update.location.split('.');
+  // coa_presence - This will probably never come in as an update
+  if (loc.length == 1) {
+    Object.keys(update.data).forEach(function (e) {
+      self.state[e] = update.data[e];
+    });
+    callback({ type : 'full_update', data : update.data });
+  // coa_presence[system] - Probably a new system being added to the DB
+  } else if (loc.length == 2) {
+    this.state[loc[1]] = update.data;
+    const cb_data = {};
+    cb_data[loc[1]] = update.data
+    callback({ type : 'system_update', data : cb_data });
+  // coa presece[system][node] - Should contain all node attributes
+  } else if (loc.length == 3) {
+    // If we have no data about this system
+    if (!this.state[loc[1]) {
+      this.state[loc[1]] = {};
+      this.state[loc[1]][loc[2]] = update.data;
+      const cb_data = {};
+      cb_data[loc[1]] = {};
+      cb_data[loc[1]][loc[2]] = update.data;
+      callback({ type : 'system_update', data : cb_data });
+    // If we have no data about this node
+    } else if (!this.state[loc[1]][loc[2]]) {
+      this.state[loc[1]][loc[2]] = update.data;
+      const cb_data = {};
+      cb_data[loc[1]] = {};
+      cb_data[loc[1]][loc[2]] = update.data;
+      callback({ type : 'node_update', data : cb_data });
+    } else {
+      // Identify changes
+      // fire callback once for each type of change
+      // user logon, node status change, node action change, node custom status change
+      this.state[loc[1]][loc[2]] = update.data;
+    }
+  // coa_presence[system][node][s,a,u,c] - Single attribute being updated
+  } else if (loc.length == 4) {
+    if (self.state[loc[1]][loc[2]][loc[3]] != update.data) {
+      // Identify change type and fire callback with relevant type id
+    }
+    this.state[loc[1]][loc[2]][loc[3]] = update.data;
+  }
 }
 
 /**
