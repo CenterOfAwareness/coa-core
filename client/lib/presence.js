@@ -51,7 +51,7 @@ Presence.prototype._get_local_presence = function (node) {
 }
 
 Presence.prototype._handle_update = function (update, callback) {
-  cosnt self = this;
+  const self = this;
   const loc = update.location.split('.');
   // coa_presence - This will probably never come in as an update
   if (loc.length == 1) {
