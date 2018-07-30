@@ -22,7 +22,7 @@ function get_path(system, node) {
  * @constructor
  * @param {COA} coa - An instance of the COA object (client/lib/coa.js)
  */
-function Presence(coa) {
+function COA_Presence(coa) {
 
   const state = {};
   const node_status = system.node_list.map(function (e) { return ''; });
