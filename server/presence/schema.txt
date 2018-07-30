@@ -1,11 +1,13 @@
 COA Presence JSON-DB Schema
 
-{ [system_name] : {   // Key must be a valid user alias on the local BBS
-    [node_number] : { // Must be numeric, 0 through 255
-      s : number,     // Node Status (nodedefs.js -> NodeStatus)
-      a : number,     // Node Action (nodedefs.js -> NodeAction)
-      u : string,     // User Alias
-      c : string      // Custom status string
+{ coa_presence : {
+    [system_name] : {   // Key must be a valid user alias on the local BBS
+      [node_number] : { // Must be numeric, 0 through 255
+        s : number,     // Node Status (nodedefs.js -> NodeStatus)
+        a : number,     // Node Action (nodedefs.js -> NodeAction)
+        u : string,     // User Alias
+        c : string      // Custom status string
+      }
     }
   }
 }
