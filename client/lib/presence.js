@@ -86,11 +86,17 @@ Presence.prototype._handle_update = function (update, callback) {
       var cb_data = [{ type : 'node_update', data : {} }];
       cb_data[0].data[loc[1]] = {};
       cb_data[0].data[loc[1]][loc[2]] = update.data;
-      if (data.s == 3 && self.state[loc[1]][loc[2]].s != 3) {
+      if (update.data.s == 3 && this.state[loc[1]][loc[2]].s != 3) {
         cb_data.push({ type : 'node_logon', data : {
           system : loc[1],
           node : loc[2],
-          user : data.u
+          user : update.data.u
+        }});
+      } else if (this.state[loc[1]][loc[2]].s == 3 && update.data.s != 3) {
+        cb_data.push({ type : 'node_logoff', data : {
+          system : loc[1],
+          node : loc[2],
+          user : this.state[loc[1]][loc[2]].u
         }});
       }
       this.state[loc[1]][loc[2]] = update.data;
@@ -104,12 +110,20 @@ Presence.prototype._handle_update = function (update, callback) {
     cb_data[0].data[loc[1]] = {};
     cb_data[0].data[loc[1]][loc[2]] = {};
     cb_data[0].data[loc[1]][loc[2]][loc[3]] = update.data;
-    if (loc[3] == 's' && update.data == 3) {
-      cb_data.push({ type : 'node_logon', data : {
-        system : loc[1],
-        node : loc[2],
-        user : this.state[loc[1]][loc[2]].u
-      }});
+    if (loc[3] == 's') {
+      if (update.data == 3) {
+        cb_data.push({ type : 'node_logon', data : {
+          system : loc[1],
+          node : loc[2],
+          user : this.state[loc[1]][loc[2]].u
+        }});
+      } else if (this.state[loc[1]][loc[2]].s == 3) {
+        cb_data.push({ type : 'node_logoff', data : {
+          system : loc[1],
+          node : loc[2],
+          user : this.state[loc[1]][loc[2]].u
+        }});
+      }
     }
     this.state[loc[1]][loc[2]][loc[3]] = update.data;
     cb_data.forEach(callback);
@@ -128,30 +142,43 @@ Presence.prototype.read = function (system, node) {
 }
 
 /**
- * Write presence data for a given node, or the entire system
- * @param {number} [node=undefined] - The node to send an update about (optional)
+ * Write any new / changed presence data to the server
  * @returns {undefined}
  */
 Presence.prototype.write = function (node) {
   const self = this;
-  var obj;
   var path = 'coa_presence.' + this.coa.system_name;
   if (typeof this.state[this.coa.system_name] != 'object') {
     this.state[this.coa.system_name] = {};
-  }
-  if (typeof node == 'number') { // We're sending an update about one node
-    path += '.' + node;
-    obj = this._get_local_presence(node);
-    this.state[this.coa.system_name][node] = obj;
-    this.coa.write('coa_presence', path, this._get_local_presence(node), 2);
-  } else { // We're pushing data for all nodes
-    obj = {};
     system.node_list.forEach(function (e, i) {
-      const _obj = self._get_local_presence(i);
-      self.state[self.coa.system_name][i] = _obj;
-      obj[i] = _obj;
+      self.state[self.coa.system_name][i] = self._get_local_presence(i);
     });
-    this.coa.client.write('coa_presence', path, obj, 2);
+    this.coa.client.write(
+      'coa_presence', path, this.state[this.coa.system_name], 2
+    );
+  } else {
+    system.node_list.forEach(function (e, i) {
+      const obj = self._get_local_presence(i);
+      if (!self.state[self.coa.system_name][i]) {
+        self.state[self.coa.system_name][i] = obj;
+        self.coa.client.write('coa_presence', path + '.' + i, obj, 2);
+      } else {
+        const changes = {};
+        Object.keys(obj).forEach(function (ee) {
+          if (obj[ee] == self.state[self.coa.system_name][i][ee]) return;
+          self.state[self.coa.system_name][i][ee] = obj[ee];
+          changes[ee] = obj[ee];
+        });
+        const k = Object.keys(changes);
+        if (k.length > 1) {
+          self.coa.client.write('coa_presence', path + '.' + i, obj, 2);
+        } else if (k.length) {
+          self.coa.client.write(
+            'coa_presence', path + '.' + i + '.' + k[0], changes[k[0]], 2
+          );
+        }
+      }
+    });
   }
 }
 
