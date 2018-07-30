@@ -184,8 +184,13 @@ Presence.prototype.write = function (node) {
 
 /**
  * Subscribe to updates from all systems
- * @param {function} callback - Receives an object containing everything that
- * changed in this update.<br>
+ * @param {function} callback - Receives an object describing changes to
+ * presence data:<br>
+ * { type : 'full_update', data : { system : { node : { s, a, u, c } ... } ... } }<br>
+ * { type : 'system_update', data : { system : { node : { s, a, u, c } ... } } }<br>
+ * { type : 'node_update', data : { system : { node : { s, a, u, c } } } } <br>
+ * { type : 'node_logon', data : { system, node, user } }<br>
+ * { type : 'node_logoff', data : { system, node, user } }<br>
  * @returns {number} Subscription ID, for use with presence.unsubscribe
  */
 Presence.prototype.subscribe = function (callback) {

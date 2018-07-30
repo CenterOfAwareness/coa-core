@@ -108,7 +108,7 @@ Subscribe to updates from all systems
 
 | Param | Type | Description |
 | --- | --- | --- |
-| callback | <code>function</code> | Receives an object containing everything that changed in this update.<br> |
+| callback | <code>function</code> | Receives an object describing changes to presence data:<br> { type : 'full_update', data : { system : { node : { s, a, u, c } ... } ... } }<br> { type : 'system_update', data : { system : { node : { s, a, u, c } ... } } }<br> { type : 'node_update', data : { system : { node : { s, a, u, c } } } } <br> { type : 'node_logon', data : { system, node, user } }<br> { type : 'node_logoff', data : { system, node, user } }<br> |
 
 <a name="Presence+unsubscribe"></a>
 
