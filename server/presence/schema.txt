@@ -1,7 +1,7 @@
 COA Presence JSON-DB Schema
 
 { coa_presence : {
-    [system_name] : {   // Key must be a valid user alias on the local BBS
+    [system_name] : {   // Key must be a valid user alias on the COA server
       [node_number] : { // Must be numeric, 0 through 255
         s : number,     // Node Status (nodedefs.js -> NodeStatus)
         a : number,     // Node Action (nodedefs.js -> NodeAction)
@@ -12,5 +12,9 @@ COA Presence JSON-DB Schema
   }
 }
 
-Only a client authenticated as local user [system_name] can write to a location
-under [system_name].  The entire DB is readable to all authenticated clients.
+Permissions:
+
+Only a client authenticated as [system_name] can write to a location under
+coa_presence[system_name].
+
+The entire DB is readable to all authenticated clients.
