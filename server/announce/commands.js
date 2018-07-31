@@ -5,7 +5,24 @@ const RATE_LIMIT_WINDOW = 5;
 const RATE_LIMIT_MS = 10000;
 const throttle = {};
 
+// Keep memory usage down by cleaning out aged rate-limiter records
+// Not super efficient, but 'throttle' should generally be quite small
+function vacu_suck() {
+  const now = new Date().getTime();
+  Object.keys(throttle).forEach(function (e) {
+    Object.keys(throttle[e]).forEach(function (ee) {
+      throttle[e][ee] = throttle[e][ee].filter(function (eee) {
+        return (now - eee <= (RATE_LIMIT_MS * 2)));
+      });
+      if (!throttle[e][ee].length) delete throttle[e][ee];
+    });
+    if (!Object.keys(throttle[e]).length) delete throttle[e];
+  });
+}
+
 this.QUERY = function (client, packet) {
+
+  vacu_suck();
 
   if (!admin.authenticated[client.id]) {
     log(LOG_DEBUG, format(
