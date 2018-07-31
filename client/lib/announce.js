@@ -51,6 +51,7 @@ COA_Announce.prototype.broadcast = function (from, text) {
  * @param {string} to - The alias of the intended recipient
  * @param {string} to_system - The system that the recipient is on
  * @param {string} text - The message text (CTRL-A codes allowed)
+ * @returns {boolean} If send was successful
  */
 COA_Announce.prototype.user_message = function (from, to, to_system, text) {
 
