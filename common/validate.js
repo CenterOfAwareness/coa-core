@@ -37,7 +37,40 @@ const coa_validate = {
       && this.alias(v.u)
       && (typeof v.c == 'undefined' || this.node_status_custom(v.c))
       && Object.keys(v).every(function (e) {
-        ['s','a','u','c'].indexOf(e) > -1;
+        return ['s','a','u','c'].indexOf(e) > -1;
+      })
+    );
+  },
+
+  announce_message_text : function (v) {
+    return (
+      v.length > 0
+      && v.length <= 160
+      && strip_ctrl(v).length <= 80
+    );
+  },
+
+  announce_global_message : function (v) {
+    return (
+      typeof v == 'object'
+      && typeof v.from_system == 'string' && this.alias_exists(v.from_system)
+      && typeof v.from_user == 'string' && this.alias(v.from_user)
+      && this.announce_message_text(v.text)
+      && Object.keys(v).every(function (e) {
+        return ['from_system', 'from_user', 'text'].indexOf(e) > -1;
+      })
+    );
+  },
+
+  announce_user_message : function (v) {
+    return (
+      typeof v == 'object'
+      && typeof v.from_system == 'string' && this.alias_exists(v.from_system)
+      && typeof v.from_user == 'string' && this.alias(v.from_user)
+      && typeof v.to_user == 'string' && this.alias(v.to_user)
+      && this.announce_message_text(v.text)
+      && Object.keys(v).every(function (e) {
+        return ['from_system', 'from_user', 'to_user', 'text'].indexOf(e) > -1;
       })
     );
   }
