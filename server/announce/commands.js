@@ -68,12 +68,9 @@ this.QUERY = function (client, packet) {
       return true; // Handled
     }
     // Rate limiting - probably a terrible approach
-    // A user can send up to RATE_LIMIT_WINDOW messages in a row unchecked.
-    // If their last ten messages were sent in a span of <= RATE_LIMIT_MS
-    // milliseconds, they will be prevented from sending a new one.
-    // Failed attempts count against this score, so you can't just keep
-    // attempting to write new messages in a loop until your last successful
-    // message ages sufficiently.
+    // A user can send RATE_LIMIT_WINDOW messages in a span of RATE_LIMIT_MS.
+    // Failed attempts count against this score; they need to back off for a
+    // while before they can send a new message.
     if (!throttle[client.id]) throttle[client.id] = {};
     if (!throttle[client.id][packet.data.from_user]) {
       throttle[client.id][packet.data.from_user] = [];
