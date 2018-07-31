@@ -1,3 +1,5 @@
+require('../mods/coa/common/validate.js', 'coa_validate');
+
 /**
  * An interface to the COA Announce database
  * @constructor
