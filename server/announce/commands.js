@@ -34,22 +34,36 @@ this.QUERY = function (client, packet) {
 
   if (packet.oper == 'WRITE') {
     // If target is 'global', must be a valid global message
-    if (
-      loc[1] == 'global' && !coa_validate.announce_global_message(packet.data)
-    ) {
-      log(LOG_INFO, format(
-        'Announce: %s sent an invalid global message from %s',
-        admin.authenticated[client.id].alias, client.remote_ip_address
-      ));
-      return true; // Handled
+    if (loc[1] == 'global') {
+      if (!coa_validate.announce_global_message(packet.data)) {
+        log(LOG_INFO, format(
+          'Announce: %s sent an invalid global message from %s',
+          admin.authenticated[client.id].alias, client.remote_ip_address
+        ));
+        return true; // Handled
+      }
     // If target is [system], [system] must exist and message must be valid
-    } else if (
-      !coa_validate.alias_exists(loc[1])
-      || !coa_validate.announce_user_message(packet.data)
-    ) {
+    } else {
+      if (!coa_validate.alias_exists(loc[1])) {
+        log(LOG_INFO, format(
+          'Announce: %s sent a message to invalid system %s from %s',
+          admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+        ));
+        return true; // Handled
+      } else if(!coa_validate.announce_user_message(packet.data)) {
+        log(LOG_INFO, format(
+          'Announce: %s sent an invalid user message to %s from %s',
+          admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+        ));
+        return true; // Handled
+      }
+    }
+    if (packet.data.from_system != admin.authenticated[client.id].alias) {
       log(LOG_INFO, format(
-        'Announce: %s sent an invalid user message to %s from %s',
-        admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+        'Announce: %s sent a message with from_system %s from %s',
+        admin.authenticated[client.id].alias,
+        packet.data.from_system,
+        client.remote_ip_address
       ));
       return true; // Handled
     }
