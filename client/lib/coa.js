@@ -16,10 +16,11 @@ function COA(host, port, username, password) {
 
   json_client.callback = function (u) {
     if (
-      ['WRITE','PUSH','POP','SHIFT','UNSHIFT','DELETE'].indexOf(u.oper) >= 0
-      && typeof callbacks[u.scope] != 'undefined'
+      // We only care about these types of operations
+      ['WRITE','PUSH','POP','SHIFT','UNSHIFT','DELETE'].indexOf(u.oper) > -1
+      && typeof callbacks[u.scope] == 'function'
     ) {
-      callbacks[u.scope].forEach(function (e) { e(u); });
+      callback[u.scope](u);
     }
   }
 
@@ -42,58 +43,32 @@ function COA(host, port, username, password) {
  * Subscribe to updates
  * @param {string} db - The JSON-DB module to subscribe to (eg. 'presence')
  * @param {function} callback - A function that accepts a JSON-DB update object as its sole parameter
- * @returns {number} The callback ID, for use with coa.unsubscribe
+ * @returns {undefined}
  */
 COA.prototype.subscribe = function (db, callback) {
-  if (typeof this.callbacks[db] == 'undefined') {
-    this.callbacks[db] = [];
-    this.client.subscribe(db, db);
+  if (typeof this.callbacks[db] == 'function') {
+    throw new Error('Already subscribed to ' + db);
   }
-  this.callbacks[db].push(callback);
-  return (this.callbacks[db].length - 1);
+  this.callbacks[db] = callback;
+  this.client.subscribe(db, db);
 }
 
 /**
  * Unsubscribe from updates
  * @param {string} [db=undefined] - The JSON-DB module to unsubscribe from (eg. 'presence') (undefined means all)
- * @param {number} [id=undefined] - The callback to remove (undefined means all)
  * @returns {undefined}
  */
-COA.prototype.unsubscribe = function (db, id) {
-
+COA.prototype.unsubscribe = function (db) {
   const self = this;
-
-  function unsubscribe_all(db) {
-    if (self.callbacks[db]) {
-      self.client.unsubscribe(db, db);
-      delete self.callbacks[db];
-    }
-  }
-
   // If no database was specified, unsubscribe from all
   if (!db) {
     Object.keys(this.callbacks).forEach(function (e) {
       self.client.unsubscribe(e, e);
       delete this.callbacks[e];
     });
-  // If a database was specified and we have callbacks for it
-  // and if no callback ID was specified, unsubscribe from that database
-  } else if (this.callbacks[db] && typeof id == 'undefined') {
+  // If a database was specified and we have a callback for it, unsubscribe
+  } else if (this.callbacks[db]) {
     this.client.unsubscribe(db, db);
     delete this.callbacks[db];
-  // If a database was specified and we have callbacks for it
-  // and a callback ID was specified, remove that callback from the list
-  } else if (
-    this.callbacks[db]
-    && typeof id == 'number' && id >= 0 && id < this.callbacks[db].length
-  ) {
-    this.callbacks[db].splice(id, 1, null);
-    // If this was the only remaining callback for this subscription
-    // unsubscribe from the database
-    if (this.callbacks[db].every(function (e) { return e == null; })) {
-      delete this.callbacks[db];
-      this.client.unsubscribe(db, db);
-    }
   }
-
 }

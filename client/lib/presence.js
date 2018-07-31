@@ -198,17 +198,15 @@ Presence.prototype.subscribe = function (callback) {
   const state = this.read();
   if (!state) throw new Error('Presence: failed to initialize data');
   Object.keys(state).forEach(function (e) { self.state[e] = state[e]; });
-  return this.coa.subscribe('coa_presence', function (update) {
+  this.coa.subscribe('coa_presence', function (update) {
     self._handle_update(update, callback);
   });
 }
 
 /**
  * Unsubscribe from updates<br>
- * If no [id] given, unsubscribes from all updates<br>
- * @param {number} [id=undefined] - ID of the subscription to remove (from presence.subscribe)
  * @returns {undefined}
  */
-Presence.prototype.unsubscribe = function (id) {
-  return this.coa.unsubscribe('coa_presence', id);
+Presence.prototype.unsubscribe = function () {
+  return this.coa.unsubscribe('coa_presence');
 }
