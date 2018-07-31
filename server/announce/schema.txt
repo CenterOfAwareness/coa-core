@@ -1,0 +1,55 @@
+COA Announce JSON-DB Schema
+
+{ coa_announce : {
+    global : [global_message],
+    [system_name] : [user_message]
+  }
+}
+
+[global_message] format:
+
+{ from_system : string, // Must be a valid user on the COA server
+  from_user : string,   // Must be non-empty, length <= LEN_ALIAS
+  text : string         // Must be length > 0, printable <= 80, raw <= 160
+}
+
+[user_message] format:
+
+{ from_system : string, // Must be a valid user on the COA server
+  from_user : string,   // Must be non-empty, length <= LEN_ALIAS
+  to_user : string,     // Must be length > 0 && <= LEN_ALIAS
+  text : string         // Must be length > 0, printable <= 80, raw <= 160
+}
+
+A [global_message] is sent to all online users on all systems.
+
+A [user_message] is sent to one user on one system. The receiving system should
+discard the message if that user is not online.
+
+Restrictions on [*_message].text:
+
+This service is intended for short, one-line messages. CTRL-A codes are
+permitted.  CR & LF will be stripped.
+
+The 'raw' length is the string length including all control characters (CTRL-A
+codes, CR, LF, etc.).
+
+The 'printable' length is strip_ctrl([*_message].text).length, or the number of
+visible characters in the string.
+
+Permissions:
+
+Only write, subscribe, and unsubscribe operations are permitted.
+
+All authenticated clients may subscribe to coa_announce.global.
+
+All authenticated clients may write to coa_announce.global, subject to rate
+limiting and [global_message] validation.
+
+Only a client authenticated as [system_name] may subscribe to
+coa_announce[system_name].
+
+All authenticated clients may write to coa_announce[system_name], subject to
+rate limiting and [user_message] validation.
+
+The COA server is exempt from [*_message].text restrictions and rate limits.
