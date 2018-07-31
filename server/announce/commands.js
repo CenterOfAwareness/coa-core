@@ -1,6 +1,10 @@
 load('sbbsdefs.js');
 require(argv[0] + '../../common/validate.js', 'coa_validate');
 
+const RATE_LIMIT_WINDOW = 5;
+const RATE_LIMIT_MS = 10000;
+const throttle = {};
+
 this.QUERY = function (client, packet) {
 
   if (!admin.authenticated[client.id]) {
@@ -48,6 +52,38 @@ this.QUERY = function (client, packet) {
         admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
       ));
       return true; // Handled
+    }
+    // Rate limiting - probably a terrible approach
+    // A user can send up to RATE_LIMIT_WINDOW messages in a row unchecked.
+    // If their last ten messages were sent in a span of <= RATE_LIMIT_MS
+    // milliseconds, they will be prevented from sending a new one.
+    // Failed attempts count against this score, so you can't just keep
+    // attempting to write new messages in a loop until your last successful
+    // message ages sufficiently.
+    if (!throttle[client.id]) throttle[client.id] = {};
+    if (!throttle[client.id][packet.data.from_user]) {
+      throttle[client.id][packet.data.from_user] = [];
+    }
+    throttle[client.id][packet.data.from_user].push(new Date().getTime());
+    if (throttle[client.id][packet.data.from_user].length > RATE_LIMIT_WINDOW) {
+      throttle[client.id][packet.data.from_user].shift();
+      var acc = 0;
+      for (var i = RATE_LIMIT_WINDOW - 1; i > 0; i--) {
+        acc += (
+          throttle[client.id][packet.data.from_user][i]
+          - throttle[client.id][packet.data.from_user][i - 1]
+        );
+      }
+      if (acc <= RATE_LIMIT_MS) {
+        log(LOG_INFO, format (
+          'Announce: %s user %s exceeded rate limit from %s (10 msgs in %s ms)',
+          admin.authenticated[client.id].alias,
+          packet.data.from_user,
+          client.remote_ip_address,
+          acc
+        ));
+        return true;
+      }
     }
   } else if (packet.oper == 'SUBSCRIBE') {
     // You can only subscribe to 'global' or your own [system_name]
