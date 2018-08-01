@@ -198,7 +198,8 @@ COA_Presence.prototype.subscribe = function (callback) {
   const state = this.read();
   if (!state) throw new Error('Presence: failed to initialize data');
   Object.keys(state).forEach(function (e) { self.state[e] = state[e]; });
-  this.coa.subscribe('coa_presence', function (update) {
+  this.coa.subscribe('coa_presence', 'coa_presence');
+  this.coa.set_callback('coa_presence', function (update) {
     self._handle_update(update, callback);
   });
 }
@@ -208,5 +209,6 @@ COA_Presence.prototype.subscribe = function (callback) {
  * @returns {undefined}
  */
 COA_Presence.prototype.unsubscribe = function () {
+  this.coa.unset_callback('coa_presence');
   return this.coa.unsubscribe('coa_presence');
 }
