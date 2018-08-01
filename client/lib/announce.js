@@ -31,7 +31,7 @@ COA_Announce.prototype._handle_update = function (update, callback) {
  */
 COA_Announce.prototype.subscribe = function (location, callback) {
   if (
-    typeof location != 'string' || location != 'global' || location != 'user'
+    typeof location != 'string' || (location != 'global' && location != 'user')
   ) {
     throw new Error('COA_Announce: Invalid subscription location ' + location);
   }
@@ -51,7 +51,7 @@ COA_Announce.prototype.subscribe = function (location, callback) {
  */
 COA_Announce.prototype.unsubscribe = function (location) {
   if (
-    typeof location != 'string' || location != 'global' || location != 'user'
+    typeof location != 'string' || (location != 'global' && location != 'user')
   ) {
     throw new Error('COA_Announce: Invalid unsubscribe location ' + location);
   }
