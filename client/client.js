@@ -13,11 +13,12 @@ function user_online(node) {
   return (node.status == NODE_INUSE || node.status == NODE_QUIET);
 }
 
-announce.subscribe('global', function (update) {
+announce.subscribe(function (update) {
   system.node_list.forEach(function (e, i) {
-    if (!user_online(system.node_list[e])) return;
-    system.put_node_message(format(
-      'From %s@%s:\r\n%s', update.from_user, update.from_system, update.text
+    if (!user_online(e)) return;
+    system.put_node_message(i + 1, format(
+      'From %s@%s:\r\n%s',
+      update.data.from_user, update.data.from_system, update.data.text
     ));
   });
 });
