@@ -1,5 +1,5 @@
 load('sbbsdefs.js');
-require(argv[0] + '../../common/validate.js', 'coa_validate');
+require(system.mods_dir + '/common/validate.js', 'coa_validate');
 
 const RATE_LIMIT_WINDOW = 5;
 const RATE_LIMIT_MS = 10000;

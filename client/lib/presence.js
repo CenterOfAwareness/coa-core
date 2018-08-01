@@ -1,6 +1,6 @@
 load('sbbsdefs.js');
 load('nodedefs.js');
-require('../mods/coa/common/validate.js', 'coa_validate');
+require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
 function get_path(system, node) {
   var path = 'coa_presence';

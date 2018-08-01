@@ -1,6 +1,6 @@
 load('nodedefs.js');
 load('sbbsdefs.js');
-require(argv[0] + '../../common/validate.js', 'coa_validate');
+require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
 this.QUERY = function (client, packet) {
 
