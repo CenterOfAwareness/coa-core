@@ -27,7 +27,7 @@ function COA(host, port, username, password) {
       ['WRITE','PUSH','POP','SHIFT','UNSHIFT','DELETE'].indexOf(u.oper) > -1
       && typeof callbacks[u.scope] == 'function'
     ) {
-      callback[u.scope](u);
+      callbacks[u.scope](u);
     }
   }
 
@@ -46,36 +46,45 @@ function COA(host, port, username, password) {
 
 }
 
-/**
- * Subscribe to updates
- * @param {string} db - The JSON-DB module to subscribe to (eg. 'presence')
- * @param {function} callback - A function that accepts a JSON-DB update object as its sole parameter
- * @returns {undefined}
- */
-COA.prototype.subscribe = function (db, callback) {
+COA.prototype.set_callback = function (db, callback) {
   if (typeof this.callbacks[db] == 'function') {
-    throw new Error('Already subscribed to ' + db);
+    throw new Error('Callback already registered for ' + db);
   }
   this.callbacks[db] = callback;
-  this.client.subscribe(db, db);
+}
+
+COA.prototype.unset_callback = function (db) {
+  if (!this.callbacks[db]) {
+    throw new Error('No callback set for ' + db);
+  }
+  delete this.callbacks[db];
+}
+
+/**
+ * Subscribe to updates
+ * @param {string} db - The JSON-DB module to subscribe to (eg. coa_presence)
+ * @param {string} location - The location to subscribe to (eg. coa_presence)
+ * @returns {undefined}
+ */
+COA.prototype.subscribe = function (db, location) {
+  this.client.subscribe(db, location);
 }
 
 /**
  * Unsubscribe from updates
  * @param {string} [db=undefined] - The JSON-DB module to unsubscribe from (eg. 'presence') (undefined means all)
+ * @param {string} location - The location to unsubscribe from (eg. coa_presence)
  * @returns {undefined}
  */
-COA.prototype.unsubscribe = function (db) {
+COA.prototype.unsubscribe = function (db, location) {
   const self = this;
   // If no database was specified, unsubscribe from all
   if (!db) {
     Object.keys(this.callbacks).forEach(function (e) {
       self.client.unsubscribe(e, e);
-      delete this.callbacks[e];
     });
   // If a database was specified and we have a callback for it, unsubscribe
   } else if (this.callbacks[db]) {
     this.client.unsubscribe(db, db);
-    delete this.callbacks[db];
   }
 }
