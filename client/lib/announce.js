@@ -6,11 +6,16 @@ require('../mods/coa/common/validate.js', 'coa_validate');
  * @param {COA} coa - An instance of the COA object (client/lib/coa.js)
  */
 function COA_Announce(coa) {
-
+  Object.defineProperty(this, 'coa', { value : coa });
 }
 
 COA_Announce.prototype._handle_update = function (update, callback) {
-
+  const loc = update.location.split('.');
+  if (loc[1] == 'global') {
+    callback({ type : 'global_message', data : update.data });
+  } else if (loc[1] == this.coa.system_name) {
+    callback({ type : 'user_message', data : update.data });
+  }
 }
 
 /**
@@ -25,7 +30,18 @@ COA_Announce.prototype._handle_update = function (update, callback) {
  * @returns {undefined}}
  */
 COA_Announce.prototype.subscribe = function (location, callback) {
-
+  if (
+    typeof location != 'string' || location != 'global' || location != 'user'
+  ) {
+    throw new Error('COA_Announce: Invalid subscription location ' + location);
+  }
+  if (typeof callback != 'function') {
+    throw new Error('COA_Announce: Invalid subscription callback');
+  }
+  const path = 'coa_announce.' + (
+    location == 'user' ? this.coa.system_name : 'global'
+  );
+  this.coa.subscribe('coa_announce', path, callback);
 }
 
 /**
@@ -34,7 +50,15 @@ COA_Announce.prototype.subscribe = function (location, callback) {
  * @returns {undefined}
  */
 COA_Announce.prototype.unsubscribe = function (location) {
-
+  if (
+    typeof location != 'string' || location != 'global' || location != 'user'
+  ) {
+    throw new Error('COA_Announce: Invalid unsubscribe location ' + location);
+  }
+  const path = 'coa_announce.' + (
+    location == 'user' ? this.coa.system_name : 'global'
+  );
+  this.coa.unsubscribe('coa_announce', path);
 }
 
 /**
@@ -44,7 +68,19 @@ COA_Announce.prototype.unsubscribe = function (location) {
  * @returns {boolean} If send was successful
  */
 COA_Announce.prototype.broadcast = function (from, text) {
-
+  if (!coa_validate.announce_message_text(text)) {
+    throw new Error('COA_Announce: invalid message text ' + text);
+  }
+  if (!coa_validate.alias_exists(from)) {
+    throw new Error('COA_Announce: invalid "from" user ' + from);
+  }
+  return this.coa.write(
+    'coa_announce', 'coa_announce.global', {
+      from_system : this.coa.system_name,
+      from_user : from,
+      text : text
+    }, 2
+  );
 }
 
 /**
@@ -56,5 +92,24 @@ COA_Announce.prototype.broadcast = function (from, text) {
  * @returns {boolean} If send was successful
  */
 COA_Announce.prototype.user_message = function (from, to, to_system, text) {
-
+  if (!coa_validate.announce_message_text(text)) {
+    throw new Error('COA_Announce: invalid message text ' + text);
+  }
+  if (!coa_validate.alias_exists(from)) {
+    throw new Error('COA_Announce: invalid "from" user ' + from);
+  }
+  if (!coa_validate.alias(to)) {
+    throw new Error('COA_Announce: invalid "to" user ' + to);
+  }
+  if (!coa_validate.alias(to_system)) {
+    throw new Error('COA_Announce: invalid "to" system' + to_system);
+  }
+  return this.coa.write(
+    'coa_announce', 'coa_announce.' + to_system, {
+      from_system : this.coa.system_name,
+      from_user : from,
+      to_user : to,
+      text : text
+    }, 2
+  );
 }
