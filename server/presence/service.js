@@ -12,12 +12,16 @@ presence.subscribe(function (update) {
   switch (update.type) {
     case 'node_logon':
       announce.broadcast(
-        'coa_server', format('%s: %s logged on', update.system, update.user)
+        'coa_server', format(
+          '%s: %s logged on', update.data.system, update.data.user
+        )
       );
       break;
     case 'node_logoff':
       announce.broadcast(
-        'coa_server', format('%s: %s logged off', update.system, update.user)
+        'coa_server', format(
+          '%s: %s logged off', update.data.system, update.data.user
+        )
       );
       break;
     default:
