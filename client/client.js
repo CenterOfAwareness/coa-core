@@ -13,7 +13,7 @@ function user_online(node) {
   return (node.status == NODE_INUSE || node.status == NODE_QUIET);
 }
 
-announce.subscribe(function (update) {
+announce.callback = function (update) {
   system.node_list.forEach(function (e, i) {
     if (!user_online(e)) return;
     system.put_node_message(i + 1, format(
@@ -21,7 +21,9 @@ announce.subscribe(function (update) {
       update.data.from_user, update.data.from_system, update.data.text
     ));
   });
-});
+}
+announce.subscribe('global');
+announce.subscribe('user');
 
 while (!js.terminated) {
   presence.write();
