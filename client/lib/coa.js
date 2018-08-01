@@ -1,14 +1,21 @@
 require('json-client.js', 'JSONClient');
+require(system.mods_dir + '/coa/common/settings.js', 'coa_settings');
 
 /**
  * An interface to the COA JSON-DB server
  * @constructor COA
- * @param {string} host - The COA JSON-DB server address
- * @param {number} port - The COA JSON-DB server port
- * @param {string} username - Your system's COA username
- * @param {string} password - Your system's COA password
+ * @param {string} [host=undefined] - The COA JSON-DB server address
+ * @param {number} [port=undefined] - The COA JSON-DB server port
+ * @param {string} [username=undefined] - Your system's COA username
+ * @param {string} [password=undefined] - Your system's COA password
+ * All parameters are optional; defaults are loaded from ctrl/coa.ini
  */
 function COA(host, port, username, password) {
+
+  host = host || coa_settings.server_address;
+  port = port || coa_settings.server_port;
+  username = username || coa_settings.system_name;
+  password = password || coa_settings.system_password;
 
   const callbacks = {};
 
