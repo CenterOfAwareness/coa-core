@@ -1,6 +1,6 @@
 js.time_limit = 0;
 
-require(system.mods_dir + '/coa//client/lib/coa.js', 'COA');
+require(system.mods_dir + '/coa/client/lib/coa.js', 'COA');
 require(system.mods_dir + '/coa/client/lib/presence.js', 'COA_Presence');
 require(system.mods_dir + '/coa/client/lib/announce.js', 'COA_Announce');
 

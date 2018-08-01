@@ -1,5 +1,5 @@
 load('sbbsdefs.js');
-require(system.mods_dir + '/common/validate.js', 'coa_validate');
+require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
 const RATE_LIMIT_WINDOW = 5;
 const RATE_LIMIT_MS = 10000;
@@ -12,7 +12,7 @@ function vacu_suck() {
   Object.keys(throttle).forEach(function (e) {
     Object.keys(throttle[e]).forEach(function (ee) {
       throttle[e][ee] = throttle[e][ee].filter(function (eee) {
-        return (now - eee <= (RATE_LIMIT_MS * 2)));
+        return (now - eee <= (RATE_LIMIT_MS * 2));
       });
       if (!throttle[e][ee].length) delete throttle[e][ee];
     });

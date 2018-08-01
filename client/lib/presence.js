@@ -35,7 +35,7 @@ function COA_Presence(coa) {
 
 }
 
-Presence.prototype._get_local_presence = function (node) {
+COA_Presence.prototype._get_local_presence = function (node) {
   const ret = {
     s : system.node_list[node].status,
     a : system.node_list[node].action,
@@ -50,7 +50,7 @@ Presence.prototype._get_local_presence = function (node) {
   return ret;
 }
 
-Presence.prototype._handle_update = function (update, callback) {
+COA_Presence.prototype._handle_update = function (update, callback) {
   const self = this;
   const loc = update.location.split('.');
   // coa_presence - This will probably never come in as an update
@@ -136,7 +136,7 @@ Presence.prototype._handle_update = function (update, callback) {
  * @param {number} [node=undefined] A node of [system] (optional)
  * @returns {(object|null)} The requested presence data, or null if unavailable
  */
-Presence.prototype.read = function (system, node) {
+COA_Presence.prototype.read = function (system, node) {
   const path = get_path(system, node);
   return this.coa.client.read('coa_presence', path, 1);
 }
@@ -145,7 +145,7 @@ Presence.prototype.read = function (system, node) {
  * Write any new / changed presence data to the server
  * @returns {undefined}
  */
-Presence.prototype.write = function (node) {
+COA_Presence.prototype.write = function (node) {
   const self = this;
   var path = 'coa_presence.' + this.coa.system_name;
   if (typeof this.state[this.coa.system_name] != 'object') {
@@ -193,7 +193,7 @@ Presence.prototype.write = function (node) {
  * { type : 'node_logoff', data : { system, node, user } }<br>
  * @returns {number} Subscription ID, for use with presence.unsubscribe
  */
-Presence.prototype.subscribe = function (callback) {
+COA_Presence.prototype.subscribe = function (callback) {
   const self = this;
   const state = this.read();
   if (!state) throw new Error('Presence: failed to initialize data');
@@ -207,6 +207,6 @@ Presence.prototype.subscribe = function (callback) {
  * Unsubscribe from updates<br>
  * @returns {undefined}
  */
-Presence.prototype.unsubscribe = function () {
+COA_Presence.prototype.unsubscribe = function () {
   return this.coa.unsubscribe('coa_presence');
 }
