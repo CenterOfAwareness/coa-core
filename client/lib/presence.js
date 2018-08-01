@@ -159,7 +159,7 @@ COA_Presence.prototype.write = function (node) {
       const obj = self._get_local_presence(i);
       if (!self.state[self.coa.system_name][i]) {
         self.state[self.coa.system_name][i] = obj;
-        self.coa.client.write('coa_presence', path + '.' + i, obj, 2);
+        self.coa.write('coa_presence', path + '.' + i, obj, 2);
       } else {
         const changes = {};
         Object.keys(obj).forEach(function (ee) {
@@ -169,9 +169,9 @@ COA_Presence.prototype.write = function (node) {
         });
         const k = Object.keys(changes);
         if (k.length > 1) {
-          self.coa.client.write('coa_presence', path + '.' + i, obj, 2);
+          self.coa.write('coa_presence', path + '.' + i, obj, 2);
         } else if (k.length) {
-          self.coa.client.write(
+          self.coa.write(
             'coa_presence', path + '.' + i + '.' + k[0], changes[k[0]], 2
           );
         }
