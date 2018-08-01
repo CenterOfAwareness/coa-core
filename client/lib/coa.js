@@ -20,25 +20,24 @@ function COA(host, port, username, password) {
   JSONClient.call(this, host, port);
 
   const callbacks = {};
-
-  this.callback = function (u) {
-    if (
-      // We only care about these types of operations
-      ['WRITE','PUSH','POP','SHIFT','UNSHIFT','DELETE'].indexOf(u.oper) > -1
-      && typeof callbacks[u.scope] == 'function'
-    ) {
-      callbacks[u.scope](u);
-    }
-  }
-
-  this.ident('admin', username, password);
-
   Object.defineProperty(this, 'callbacks', { value : callbacks });
   Object.defineProperty(this, 'system_name', { value : username });
+
+  this.ident('admin', username, password);
 
 }
 COA.prototype = Object.create(JSONClient.prototype);
 COA.prototype.constructor = COA;
+
+COA.prototype.callback = function (u) {
+  if (
+    // We only care about these types of operations
+    ['WRITE','PUSH','POP','SHIFT','UNSHIFT','DELETE'].indexOf(u.oper) > -1
+    && typeof this.callbacks[u.scope] == 'function'
+  ) {
+    this.callbacks[u.scope](u);
+  }
+}
 
 COA.prototype.set_callback = function (db, callback) {
   if (typeof this.callbacks[db] == 'function') {
