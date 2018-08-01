@@ -4,17 +4,37 @@ require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
  * An interface to the COA Announce database
  * @constructor
  * @param {COA} coa - An instance of the COA object (client/lib/coa.js)
+ * @property {function} callback - A function that handles updates<br>
+ * The callback will receive one parameter, an object such as:<br>
+ * {type : 'global_message', data : {from_system, from_user, text}}
+ * {type : 'user_message', data : {from_system, from_user, to_user, text}}<br>
+ * (All values of 'data' are strings.)<br>
+ * If you subscribe to any announcement types, you must set this property in
+ * order to react to any announcements that come in.
  */
 function COA_Announce(coa) {
+  var callback = function () {};
   Object.defineProperty(this, 'coa', { value : coa });
+  Object.defineProperty(this, 'callback', {
+    get : function () { return callback; },
+    set : function (cb) {
+      if (typeof cb == 'function') {
+        coa.set_callback('coa_announce', callback);
+      } else if (typeof cb != 'undefined') {
+        throw new Error('COA_Announce: invalid callback');
+      }
+      callback = cb;
+    }
+  });
 }
 
-COA_Announce.prototype._handle_update = function (update, callback) {
+COA_Announce.prototype._handle_update = function (update) {
+  if (!this.callback) return;
   const loc = update.location.split('.');
   if (loc[1] == 'global') {
-    callback({ type : 'global_message', data : update.data });
+    this.callback({ type : 'global_message', data : update.data });
   } else if (loc[1] == this.coa.system_name) {
-    callback({ type : 'user_message', data : update.data });
+    this.callback({ type : 'user_message', data : update.data });
   }
 }
 
@@ -23,19 +43,14 @@ COA_Announce.prototype._handle_update = function (update, callback) {
  * 'global' messages are intended for all online users on all systems<br>
  * 'user' messages are intended for online users on the local system<br>
  * @param {string} location - 'global' or 'user'
- * @param {function} callback - Receives an object describing the message:<br>
- * { from_system, from_user, text } - Global message<br>
- * { from_system, from_user, to_user, text } - User message<br>
- * (All values are strings)
  * @returns {undefined}}
  */
-COA_Announce.prototype.subscribe = function (callback) {
-  const self = this;
-  this.coa.subscribe('coa_announce', 'coa_announce.global');
-  this.coa.subscribe('coa_announce', 'coa_announce.' + this.coa.system_name);
-  this.coa.set_callback('coa_announce', function (update) {
-    self._handle_update(update, callback);
-  });
+COA_Announce.prototype.subscribe = function (location) {
+  if (['global', 'user'].indexOf(location) < 0) {
+    throw new Error('COA_Announce: invalid subscription location ' + location);
+  }
+  if (location == 'user') location = this.coa.system_name;
+  this.coa.subscribe('coa_announce', 'coa_announce.' + location);
 }
 
 /**
@@ -44,9 +59,11 @@ COA_Announce.prototype.subscribe = function (callback) {
  * @returns {undefined}
  */
 COA_Announce.prototype.unsubscribe = function (location) {
-  this.coa.unsubscribe('coa_announce', 'coa_announce.global');
-  this.coa.unsubscribe('coa_announce', 'coa_announce.' + this.coa.system_name);
-  this.coa.unset_callback('coa_announce');
+  if (['global', 'user'].indexOf(location) < 0) {
+    throw new Error('COA_Announce: invalid subscription location ' + location);
+  }
+  if (location == 'user') location = this.coa.system_name;
+  this.coa.unsubscribe('coa_announce', 'coa_announce.' + location);
 }
 
 /**
