@@ -62,7 +62,7 @@ COA_Announce.prototype.broadcast = function (from, text) {
   if (!coa_validate.alias_exists(from)) {
     throw new Error('COA_Announce: invalid "from" user ' + from);
   }
-  return this.coa.client.write(
+  return this.coa.write(
     'coa_announce', 'coa_announce.global', {
       from_system : this.coa.system_name,
       from_user : from,
@@ -92,7 +92,7 @@ COA_Announce.prototype.user_message = function (from, to, to_system, text) {
   if (!coa_validate.alias(to_system)) {
     throw new Error('COA_Announce: invalid "to" system' + to_system);
   }
-  return this.coa.client.write(
+  return this.coa.write(
     'coa_announce', 'coa_announce.' + to_system, {
       from_system : this.coa.system_name,
       from_user : from,

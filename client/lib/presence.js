@@ -138,7 +138,7 @@ COA_Presence.prototype._handle_update = function (update, callback) {
  */
 COA_Presence.prototype.read = function (system, node) {
   const path = get_path(system, node);
-  return this.coa.client.read('coa_presence', path, 1);
+  return this.coa.read('coa_presence', path, 1);
 }
 
 /**
@@ -153,9 +153,7 @@ COA_Presence.prototype.write = function (node) {
     system.node_list.forEach(function (e, i) {
       self.state[self.coa.system_name][i] = self._get_local_presence(i);
     });
-    this.coa.client.write(
-      'coa_presence', path, this.state[this.coa.system_name], 2
-    );
+    this.coa.write('coa_presence', path, this.state[this.coa.system_name], 2);
   } else {
     system.node_list.forEach(function (e, i) {
       const obj = self._get_local_presence(i);
