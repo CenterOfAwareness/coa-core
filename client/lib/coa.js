@@ -12,12 +12,12 @@ require(system.mods_dir + '/coa/common/settings.js', 'coa_settings');
  */
 function COA(host, port, username, password) {
 
-  JSONClient.call(this, host, port);
-
   host = host || coa_settings.server_address;
   port = port || coa_settings.server_port;
   username = username || coa_settings.system_name;
   password = password || coa_settings.system_password;
+
+  JSONClient.call(this, host, port);
 
   const callbacks = {};
 
