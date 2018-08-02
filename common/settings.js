@@ -5,5 +5,6 @@ if (!f.open('r')) throw new Error('Could not open ' + path);
 const coa_settings = f.iniGetAllObjects().reduce(function (a, c) {
   a[c.name] = c;
   delete a[c.name].name;
+  return a;
 }, {});
 f.close();
