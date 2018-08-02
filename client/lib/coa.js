@@ -14,10 +14,10 @@ const SUBSCRIBABLES = ['WRITE', 'PUSH', 'POP', 'SHIFT', 'UNSHIFT', 'DELETE'];
  */
 function COA(host, port, username, password) {
 
-  host = host || coa_settings.server_address;
-  port = port || coa_settings.server_port;
-  username = username || coa_settings.system_name;
-  password = password || coa_settings.system_password;
+  host = host || coa_settings.client.server_address;
+  port = port || coa_settings.client.server_port;
+  username = username || coa_settings.client.system_name;
+  password = password || coa_settings.client.system_password;
 
   JSONClient.call(this, host, port);
 
