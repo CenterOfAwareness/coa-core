@@ -11,18 +11,10 @@ const announce = new COA_Announce(coa);
 presence.subscribe(function (update) {
   switch (update.type) {
     case 'node_logon':
-      announce.broadcast(
-        'coa_server', format(
-          '%s: %s logged on', update.data.system, update.data.user
-        )
-      );
+      announce.presence(update.data.system, update.data.user, 'logon');
       break;
     case 'node_logoff':
-      announce.broadcast(
-        'coa_server', format(
-          '%s: %s logged off', update.data.system, update.data.user
-        )
-      );
+      announce.presence(udpate.data.system, update.data.user, 'logoff');
       break;
     default:
       break;
