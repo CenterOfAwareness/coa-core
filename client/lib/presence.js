@@ -2,21 +2,6 @@ load('sbbsdefs.js');
 load('nodedefs.js');
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
-function get_path(system, node) {
-  var path = 'coa_presence';
-  if (coa_validate.alias(system)) {
-    path += '.' + system;
-    if (coa_validate.node_number(node)) {
-      path += '.' + node;
-    } else if (typeof node != 'undefined') {
-      throw new Error('Presence: invalid [node] parameter ' + node + '.');
-    }
-  } else if (typeof system != 'undefined') {
-    throw new Error('Presence: invalid [system] parameter ' + system + '.');
-  }
-  return path;
-}
-
 /**
  * An interface to the COA Presence database
  * @constructor
@@ -33,6 +18,21 @@ function COA_Presence(coa) {
     value : node_status, enumerable : true
   });
 
+}
+
+COA_Presence.prototype._get_path = function (system, node) {
+  var path = 'coa_presence';
+  if (coa_validate.alias(system)) {
+    path += '.' + system;
+    if (coa_validate.node_number(node)) {
+      path += '.' + node;
+    } else if (typeof node != 'undefined') {
+      throw new Error('Presence: invalid [node] parameter ' + node + '.');
+    }
+  } else if (typeof system != 'undefined') {
+    throw new Error('Presence: invalid [system] parameter ' + system + '.');
+  }
+  return path;
 }
 
 COA_Presence.prototype._get_local_presence = function (node) {
@@ -137,7 +137,7 @@ COA_Presence.prototype._handle_update = function (update, callback) {
  * @returns {(object|null)} The requested presence data, or null if unavailable
  */
 COA_Presence.prototype.read = function (system, node) {
-  const path = get_path(system, node);
+  const path = this._get_path(system, node);
   return this.coa.read('coa_presence', path, 1);
 }
 

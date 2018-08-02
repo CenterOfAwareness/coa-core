@@ -1,25 +1,5 @@
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
-function get_path(location) {
-  switch (location) {
-    case 'global':
-      var location = 'global.text';
-      break;
-    case 'presence':
-      var location = 'global.presence';
-      break;
-    case 'user':
-      location = 'systems.' + this.coa.system_name;
-      break;
-    default:
-      throw new Error(
-        'COA_Announce: invalid subscription location ' + location
-      );
-      break;
-  }
-  return 'coa_announce.' + location;
-}
-
 /**
  * An interface to the COA Announce database
  * @constructor
@@ -48,6 +28,26 @@ function COA_Announce(coa) {
   });
 }
 
+COA_Announce.prototype._get_path = function (location) {
+  switch (location) {
+    case 'global':
+      var location = 'global.text';
+      break;
+    case 'presence':
+      var location = 'global.presence';
+      break;
+    case 'user':
+      location = 'systems.' + this.coa.system_name;
+      break;
+    default:
+      throw new Error(
+        'COA_Announce: invalid location ' + location
+      );
+      break;
+  }
+  return 'coa_announce.' + location;
+}
+
 COA_Announce.prototype._handle_update = function (update) {
   if (!this.callback) return;
   const loc = update.location.split('.');
@@ -66,7 +66,7 @@ COA_Announce.prototype._handle_update = function (update) {
  * @returns {undefined}}
  */
 COA_Announce.prototype.subscribe = function (location) {
-  const path = get_path(location);
+  const path = this._get_path(location);
   this.coa.subscribe('coa_announce', path);
 }
 
@@ -76,7 +76,7 @@ COA_Announce.prototype.subscribe = function (location) {
  * @returns {undefined}
  */
 COA_Announce.prototype.unsubscribe = function (location) {
-  const path = get_path(location);
+  const path = this._get_path(location);
   this.coa.unsubscribe('coa_announce', path);
 }
 
