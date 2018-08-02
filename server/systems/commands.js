@@ -43,8 +43,6 @@ this.QUERY = function (client, packet) {
     }
     usr = undefined;
 
-    log(JSON.stringify(data));
-
     client.sendJSON({
       scope : 'coa_systems',
       location : packet.location,
