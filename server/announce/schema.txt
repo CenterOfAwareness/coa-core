@@ -1,8 +1,13 @@
 COA Announce JSON-DB Schema
 
 { coa_announce : {
-    global : [global_message],
-    [system_name] : [user_message]
+    global : {
+      text : [global_message],
+      presence : [presence_message]
+    },
+    systems : {
+      [system_name] : [user_message]
+    }
   }
 }
 
@@ -11,6 +16,13 @@ COA Announce JSON-DB Schema
 { from_system : string, // Must be a valid user on the COA server
   from_user : string,   // Must be non-empty, length <= LEN_ALIAS
   text : string         // Must be length > 0, printable <= 80, raw <= 160
+}
+
+[presence_message] format:
+
+{ from_system : string, // Must be a valid user on the COA server
+  from_user : string,   // Must be non-empty, length <= LEN_ALIAS
+  action : string       // Must be length > 0, printable <= 80, raw <= 160
 }
 
 [user_message] format:
@@ -23,6 +35,9 @@ COA Announce JSON-DB Schema
 
 A [global_message] is sent to all online users on all systems.
 
+A [presence_message] is sent to all systems, and is intended for consumption
+and rerouting/redisplay by scripts (such as the COA client.)
+
 A [user_message] is sent to one user on one system. The receiving system should
 discard the message if that user is not online.
 
@@ -32,19 +47,23 @@ This service is intended for short, one-line messages. CTRL-A codes are
 permitted.  CR & LF will be stripped.
 
 The 'raw' length is the string length including all control characters (CTRL-A
-codes, CR, LF, etc.).
+codes, CR, LF, etc.).  This allows some overhead for colour codes.
 
 The 'printable' length is strip_ctrl([*_message].text).length, or the number of
-visible characters in the string.
+visible characters in the string.  The 80 character limit was chosen to keep
+messages short (one line on an 80 column terminal).
 
 Permissions:
 
 Only write, subscribe, and unsubscribe operations are permitted.
 
-All authenticated clients may subscribe to coa_announce.global.
+All authenticated clients may subscribe to coa_announce.global.text and
+coa_announce.global.presence.
 
 All authenticated clients may write to coa_announce.global, subject to rate
 limiting and [global_message] validation.
+
+Only the COA server may write to coa_announce.presence.
 
 Only a client authenticated as [system_name] may subscribe to
 coa_announce[system_name].

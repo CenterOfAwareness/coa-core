@@ -1,5 +1,6 @@
 load('sbbsdefs.js');
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
+require(system.mods_dir + '/coa/common/settings.js', 'coa_settings');
 
 const RATE_LIMIT_WINDOW = 5;
 const RATE_LIMIT_MS = 10000;
@@ -40,7 +41,7 @@ this.QUERY = function (client, packet) {
   if (
     loc[0] != 'coa_announce'
     || allowed_operations.indexOf(packet.oper) < 0
-    || loc.length != 2
+    || loc.length != 3
   ) {
     log(LOG_INFO, format(
       'Announce: %s tried %s on %s from %s',
@@ -52,28 +53,67 @@ this.QUERY = function (client, packet) {
   if (packet.oper == 'WRITE') {
     // If target is 'global', must be a valid global message
     if (loc[1] == 'global') {
-      if (!coa_validate.announce_global_message(packet.data)) {
-        log(LOG_INFO, format(
-          'Announce: %s sent an invalid global message from %s',
-          admin.authenticated[client.id].alias, client.remote_ip_address
-        ));
-        return true; // Handled
+      var ret = false;
+      switch (loc[2]) {
+        case 'text':
+          if (!coa_validate.announce_global_message(packet.data)) {
+            ret = true;
+            log(LOG_INFO, format(
+              'Announce: %s sent an invalid global text message from %s',
+              admin.authenticated[client.id].alias, client.remote_ip_address
+            ));
+          }
+          break;
+        case 'presence':
+          if (
+            admin.authenticated[client.id].alias
+            != coa_settings.server.superuser
+          ) {
+            ret = true;
+            log(LOG_INFO, format(
+              'Announce: %s tried to write to global.presence from %s',
+              admin.authenticated[client.id].alias, client.remote_ip_address
+            ));
+          }
+          break;
+        default:
+          ret = true;
+          log(LOG_INFO, format(
+            'Announce: %s tried to write to %s from %s',
+            admin.authenticated[client.id].alias,
+            packet.location,
+            client.remote_ip_address
+          ));
+          break;
       }
-    // If target is [system], [system] must exist and message must be valid
-    } else {
-      if (!coa_validate.alias_exists(loc[1])) {
+      if (ret) return true; // Handled
+    // If target is systems.[system], [system] must exist, message must be valid
+    } else if (loc[1] == 'systems') {
+      if (!coa_validate.alias_exists(loc[2])) {
         log(LOG_INFO, format(
           'Announce: %s sent a message to invalid system %s from %s',
-          admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+          admin.authenticated[client.id].alias,
+          packet.location,
+          client.remote_ip_address
         ));
         return true; // Handled
       } else if(!coa_validate.announce_user_message(packet.data)) {
         log(LOG_INFO, format(
           'Announce: %s sent an invalid user message to %s from %s',
-          admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+          admin.authenticated[client.id].alias,
+          packet.location,
+          client.remote_ip_address
         ));
         return true; // Handled
       }
+    } else { // Not coa_announce.global.x or coa_announce.systems.x
+      log(LOG_INFO, format (
+        'Announce: %s tried to write to %s from %s',
+        admin.authenticated[client.id].alias,
+        packet.location,
+        client.remote_ip_address
+      ));
+      return true; // Handled
     }
     if (packet.data.from_system != admin.authenticated[client.id].alias) {
       log(LOG_INFO, format(
@@ -115,10 +155,12 @@ this.QUERY = function (client, packet) {
     }
   } else if (packet.oper == 'SUBSCRIBE') {
     // You can only subscribe to 'global' or your own [system_name]
-    if (loc[1] != 'global' && loc[1] != admin.authenticated[client.id].alias) {
+    if (loc[1] != 'global' && loc[2] != admin.authenticated[client.id].alias) {
       log(LOG_INFO, format(
         'Announce: %s tried to subscribe to %s from %s',
-        admin.authenticated[client.id].alias, loc[1], client.remote_ip_address
+        admin.authenticated[client.id].alias,
+        packet.location,
+        client.remote_ip_address
       ));
       return true;
     }

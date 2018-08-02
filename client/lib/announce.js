@@ -1,5 +1,25 @@
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
+function get_path(location) {
+  switch (location) {
+    case 'global':
+      var location = 'global.text';
+      break;
+    case 'presence':
+      var location = 'global.presence';
+      break;
+    case 'user':
+      location = 'systems.' + this.coa.system_name;
+      break;
+    default:
+      throw new Error(
+        'COA_Announce: invalid subscription location ' + location
+      );
+      break;
+  }
+  return 'coa_announce.' + location;
+}
+
 /**
  * An interface to the COA Announce database
  * @constructor
@@ -46,11 +66,8 @@ COA_Announce.prototype._handle_update = function (update) {
  * @returns {undefined}}
  */
 COA_Announce.prototype.subscribe = function (location) {
-  if (['global', 'user'].indexOf(location) < 0) {
-    throw new Error('COA_Announce: invalid subscription location ' + location);
-  }
-  if (location == 'user') location = this.coa.system_name;
-  this.coa.subscribe('coa_announce', 'coa_announce.' + location);
+  const path = get_path(location);
+  this.coa.subscribe('coa_announce', path);
 }
 
 /**
@@ -59,11 +76,8 @@ COA_Announce.prototype.subscribe = function (location) {
  * @returns {undefined}
  */
 COA_Announce.prototype.unsubscribe = function (location) {
-  if (['global', 'user'].indexOf(location) < 0) {
-    throw new Error('COA_Announce: invalid subscription location ' + location);
-  }
-  if (location == 'user') location = this.coa.system_name;
-  this.coa.unsubscribe('coa_announce', 'coa_announce.' + location);
+  const path = get_path(location);
+  this.coa.unsubscribe('coa_announce', path);
 }
 
 /**
@@ -80,7 +94,7 @@ COA_Announce.prototype.broadcast = function (from, text) {
     throw new Error('COA_Announce: invalid "from" user ' + from);
   }
   return this.coa.write(
-    'coa_announce', 'coa_announce.global', {
+    'coa_announce', 'coa_announce.global.text', {
       from_system : this.coa.system_name,
       from_user : from,
       text : text
@@ -110,11 +124,31 @@ COA_Announce.prototype.user_message = function (from, to, to_system, text) {
     throw new Error('COA_Announce: invalid "to" system' + to_system);
   }
   return this.coa.write(
-    'coa_announce', 'coa_announce.' + to_system, {
+    'coa_announce', 'coa_announce.systems.' + to_system, {
       from_system : this.coa.system_name,
       from_user : from,
       to_user : to,
       text : text
+    }, 2
+  );
+}
+
+// COA server use only
+COA_Announce.prototype.presence = function (system, user, action) {
+  if (!coa_validate.alias_exists(system)) {
+    throw new Error('COA_Announce: invalid system ' + system);
+  }
+  if (!coa_validate.alias(user)) {
+    throw new Error('COA_Announce: invalid user ' + user);
+  }
+  if (!coa_validate.announce_message_text(action)) {
+    throw new Error('COA_Announce: invalid message text ' + text);
+  }
+  return this.coa.write(
+    'coa_announce', 'coa_announce.global.presence', {
+      from_system : system,
+      from_user : user,
+      action : action
     }, 2
   );
 }
