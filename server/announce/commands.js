@@ -60,19 +60,17 @@ this.QUERY = function (client, packet) {
             ret = true;
             log(LOG_INFO, format(
               'Announce: %s sent an invalid global text message from %s',
-              admin.authenticated[client.id].alias, client.remote_ip_address
+              alias, client.remote_ip_address
             ));
           }
           break;
         case 'presence':
-          if (
-            admin.authenticated[client.id].alias
-            != coa_settings.server.superuser
+          if (alias != coa_settings.server.superuser
           ) {
             ret = true;
             log(LOG_INFO, format(
               'Announce: %s tried to write to global.presence from %s',
-              admin.authenticated[client.id].alias, client.remote_ip_address
+              alias, client.remote_ip_address
             ));
           }
           break;
@@ -80,9 +78,7 @@ this.QUERY = function (client, packet) {
           ret = true;
           log(LOG_INFO, format(
             'Announce: %s tried to write to %s from %s',
-            admin.authenticated[client.id].alias,
-            packet.location,
-            client.remote_ip_address
+            alias, packet.location, client.remote_ip_address
           ));
           break;
       }
@@ -92,35 +88,27 @@ this.QUERY = function (client, packet) {
       if (!coa_validate.alias_exists(loc[2])) {
         log(LOG_INFO, format(
           'Announce: %s sent a message to invalid system %s from %s',
-          admin.authenticated[client.id].alias,
-          packet.location,
-          client.remote_ip_address
+          alias, packet.location, client.remote_ip_address
         ));
         return true; // Handled
       } else if(!coa_validate.announce_user_message(packet.data)) {
         log(LOG_INFO, format(
           'Announce: %s sent an invalid user message to %s from %s',
-          admin.authenticated[client.id].alias,
-          packet.location,
-          client.remote_ip_address
+          alias, packet.location, client.remote_ip_address
         ));
         return true; // Handled
       }
     } else { // Not coa_announce.global.x or coa_announce.systems.x
       log(LOG_INFO, format (
         'Announce: %s tried to write to %s from %s',
-        admin.authenticated[client.id].alias,
-        packet.location,
-        client.remote_ip_address
+        alias, packet.location, client.remote_ip_address
       ));
       return true; // Handled
     }
-    if (packet.data.from_system != admin.authenticated[client.id].alias) {
+    if (packet.data.from_system != alias) {
       log(LOG_INFO, format(
         'Announce: %s sent a message with from_system %s from %s',
-        admin.authenticated[client.id].alias,
-        packet.data.from_system,
-        client.remote_ip_address
+        alias, packet.data.from_system, client.remote_ip_address
       ));
       return true; // Handled
     }
@@ -145,22 +133,17 @@ this.QUERY = function (client, packet) {
       if (acc <= RATE_LIMIT_MS) {
         log(LOG_INFO, format (
           'Announce: %s user %s exceeded rate limit from %s (10 msgs in %s ms)',
-          admin.authenticated[client.id].alias,
-          packet.data.from_user,
-          client.remote_ip_address,
-          acc
+          alias, packet.data.from_user, client.remote_ip_address, acc
         ));
         return true;
       }
     }
   } else if (packet.oper == 'SUBSCRIBE') {
     // You can only subscribe to 'global' or your own [system_name]
-    if (loc[1] != 'global' && loc[2] != admin.authenticated[client.id].alias) {
+    if (loc[1] != 'global' && loc[2] != alias) {
       log(LOG_INFO, format(
         'Announce: %s tried to subscribe to %s from %s',
-        admin.authenticated[client.id].alias,
-        packet.location,
-        client.remote_ip_address
+        alias, packet.location, client.remote_ip_address
       ));
       return true;
     }
