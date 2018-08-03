@@ -52,17 +52,21 @@ COA_Announce.prototype._handle_update = function (update) {
   if (!this.callback) return;
   const loc = update.location.split('.');
   if (loc[1] == 'global') {
-    this.callback({ type : 'global_message', data : update.data });
+    if (loc[2] == 'text') {
+      this.callback({ type : 'global_message', data : update.data });
+    } else if (loc[2] == 'presence') {
+      this.callback({ type : 'presence_message', data : update.data });
+    }
   } else if (loc[1] == this.coa.system_name) {
     this.callback({ type : 'user_message', data : update.data });
   }
 }
 
 /**
- * Subscribe to 'global' or 'user' messages.<br>
+ * Subscribe to 'global', 'presence', or 'user' messages.<br>
  * 'global' messages are intended for all online users on all systems<br>
  * 'user' messages are intended for online users on the local system<br>
- * @param {string} location - 'global' or 'user'
+ * @param {string} location - 'global', 'presence', or 'user'
  * @returns {undefined}}
  */
 COA_Announce.prototype.subscribe = function (location) {
