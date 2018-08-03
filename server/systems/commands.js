@@ -63,7 +63,7 @@ this.QUERY = function (client, packet) {
 
     } else { // loc.length must be 2 if we got here
 
-      var un = system.matchuser(loc[2]);
+      var un = system.matchuser(loc[1]);
       if (un < 1) return false;
       var usr = new User(un);
       if (usr.settings&USER_DELETED || !(usr.security.flags1&UFLAG_C)) {
@@ -89,7 +89,7 @@ this.QUERY = function (client, packet) {
 
   } else if (packet.oper == 'WRITE' ) {
 
-    if (loc[2] != alias || loc[3] != 'ping') {
+    if (loc[1] != alias || loc[2] != 'ping') {
       log(LOG_INFO, format(
         'Announce: %s tried %s on %s from %s',
         alias, packet.oper, packet.location, client.remote_ip_address
@@ -97,7 +97,7 @@ this.QUERY = function (client, packet) {
       return true; // Handled
     }
 
-    var un = system.matchuser(loc[2]);
+    var un = system.matchuser(loc[1]);
     if (un < 1) return false; // This should be impossible, but meh.
     var usr = new User(un);
     if (usr.settings&USER_DELETED || !(usr.security.flags1&UFLAG_C)) {
