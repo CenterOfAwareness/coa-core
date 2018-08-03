@@ -7,6 +7,8 @@ require(system.mods_dir + '/coa/client/lib/presence.js', 'COA_Presence');
 require(system.mods_dir + '/coa/client/lib/announce.js', 'COA_Announce');
 require(system.mods_dir + '/coa/client/lib/systems.js', 'COA_Systems');
 
+var event_reconnect = null;
+
 const timer = new Timer();
 const coa = new COA();
 const presence = new COA_Presence(coa);
@@ -15,6 +17,20 @@ const systems = new COA_Systems(coa);
 
 function user_online(node) {
   return (node.status == NODE_INUSE || node.status == NODE_QUIET);
+}
+
+function ping() {
+  if (coa.connected) systems.ping);
+}
+
+function reconnect() {
+  if (!coa.connect()) return;
+  coa.ident(
+    'admin',
+    coa_settings.client.system_name,
+    coa_settings.client.system_password
+  );
+  event_reconnect.abort = true;
 }
 
 announce.callback = function (update) {
@@ -30,11 +46,17 @@ announce.subscribe('global');
 announce.subscribe('user');
 
 systems.ping();
-timer.addEvent(coa_settings.client.ping_interval, true, systems.ping);
+timer.addEvent(coa_settings.client.ping_interval, true, ping);
 
 while (!js.terminated) {
-  presence.write();
+  if (coa.connected) {
+    presence.write();
+    coa.cycle();
+  } else if (event_reconnect === null || event_reconnect.abort) {
+    event_reconnect = timer.addEvent(
+      coa_settings.client.reconnect_interval, true, reconnect
+    );
+  }
   timer.cycle();
-  coa.cycle();
   yield();
 }
