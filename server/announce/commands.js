@@ -105,7 +105,10 @@ this.QUERY = function (client, packet) {
       ));
       return true; // Handled
     }
-    if (packet.data.from_system != alias) {
+    if (
+      packet.data.from_system != alias
+      && alias != coa_settings.server.superuser
+    ) {
       log(LOG_INFO, format(
         'Announce: %s sent a message with from_system %s from %s',
         alias, packet.data.from_system, client.remote_ip_address
