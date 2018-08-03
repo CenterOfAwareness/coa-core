@@ -33,16 +33,57 @@ function reconnect() {
   event_reconnect.abort = true;
 }
 
-announce.callback = function (update) {
+function message_all_nodes(msg) {
   system.node_list.forEach(function (e, i) {
-    if (!user_online(e)) return;
-    system.put_node_message(i + 1, format(
-      'From %s@%s:\r\n%s',
-      update.data.from_user, update.data.from_system, update.data.text
-    ));
+    if (user_online(e)) system.put_node_message(i + 1, msg);
   });
 }
+
+function message_online_user(user, msg) {
+  system.node_list.forEach(function (e, i) { // If on multiple nodes, msg each
+    if (!user_online(e)) return;
+    const usr = new User(e.useron);
+    if (usr.alias.toLowerCase() == user.toLowerCase()) {
+      system.put_node_message(i + 1, msg);
+    }
+    usr = undefined;
+  });
+}
+
+announce.callback = function (update) {
+  switch (update.data.type) {
+    case 'global_message':
+      message_all_nodes(format(
+        '\1n\1mGlobal message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s',
+        update.data.from_user, update.data.from_system, update.data.text
+      ));
+      break;
+    case 'presence_message':
+      var action = null;
+      if (update.data.action == 'logon') {
+        action = 'logged on';
+      } else if (update.data.action == 'logoff') {
+        action = 'logged_off';
+      }
+      if (action) {
+        message_all_nodes(format(
+          '\1h\1m%s\1n\1m: \1h\1w%s \1n\1m%s',
+          update.data.from_system, update.data.from_user, action
+        ));
+      }
+      break;
+    case 'user_message':
+      message_online_user(update.data.to_user, format(
+        '\1n\1mPrivate message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s',
+        update.data.from_user, update.data.from_system, update.data.text
+      ));
+      break;
+    default:
+      break;
+  }
+}
 announce.subscribe('global');
+announce.subscribe('presence');
 announce.subscribe('user');
 
 systems.ping();
