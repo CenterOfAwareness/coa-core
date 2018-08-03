@@ -13,19 +13,21 @@ require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
  * order to react to any announcements that come in.
  */
 function COA_Announce(coa) {
-  var callback = function () {};
+  var callback;
+  const self = this;
   Object.defineProperty(this, 'coa', { value : coa });
   Object.defineProperty(this, 'callback', {
-    get : function () { return callback; },
     set : function (cb) {
-      if (typeof cb == 'function') {
-        coa.set_callback('coa_announce', callback);
-      } else if (typeof cb != 'undefined') {
+      if (typeof cb != 'function') {
         throw new Error('COA_Announce: invalid callback');
       }
       callback = cb;
     }
   });
+  coa.set_callback(
+    'coa_announce', function (update) {
+      self._handle_update(update, callback);
+    });
 }
 
 COA_Announce.prototype._get_path = function (location) {
@@ -48,17 +50,17 @@ COA_Announce.prototype._get_path = function (location) {
   return 'coa_announce.' + location;
 }
 
-COA_Announce.prototype._handle_update = function (update) {
-  if (!this.callback) return;
+COA_Announce.prototype._handle_update = function (update, callback) {
+  if (!callback) return;
   const loc = update.location.split('.');
   if (loc[1] == 'global') {
     if (loc[2] == 'text') {
-      this.callback({ type : 'global_message', data : update.data });
+      callback({ type : 'global_message', data : update.data });
     } else if (loc[2] == 'presence') {
-      this.callback({ type : 'presence_message', data : update.data });
+      callback({ type : 'presence_message', data : update.data });
     }
   } else if (loc[1] == this.coa.system_name) {
-    this.callback({ type : 'user_message', data : update.data });
+    callback({ type : 'user_message', data : update.data });
   }
 }
 
