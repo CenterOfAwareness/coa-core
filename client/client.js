@@ -20,7 +20,7 @@ function user_online(node) {
 }
 
 function ping() {
-  if (coa.connected) systems.ping);
+  if (coa.connected) systems.ping;
 }
 
 function reconnect() {
