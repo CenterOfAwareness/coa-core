@@ -16,7 +16,7 @@ const announce = new COA_Announce(coa);
 const systems = new COA_Systems(coa);
 
 function user_online(node) {
-  return (node.status == NODE_INUSE || node.status == NODE_QUIET);
+  return (node.status&NODE_INUSE || node.status&NODE_QUIET);
 }
 
 function ping() {
@@ -51,10 +51,10 @@ function message_online_user(user, msg) {
 }
 
 announce.callback = function (update) {
-  switch (update.data.type) {
+  switch (update.type) {
     case 'global_message':
       message_all_nodes(format(
-        '\1n\1mGlobal message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s',
+        '\1n\1mGlobal message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s\rn',
         update.data.from_user, update.data.from_system, update.data.text
       ));
       break;
@@ -63,18 +63,18 @@ announce.callback = function (update) {
       if (update.data.action == 'logon') {
         action = 'logged on';
       } else if (update.data.action == 'logoff') {
-        action = 'logged_off';
+        action = 'logged off';
       }
       if (action) {
         message_all_nodes(format(
-          '\1h\1m%s\1n\1m: \1h\1w%s \1n\1m%s',
+          '\1h\1m%s\1n\1m: \1h\1w%s \1n\1m%s\r\n',
           update.data.from_system, update.data.from_user, action
         ));
       }
       break;
     case 'user_message':
       message_online_user(update.data.to_user, format(
-        '\1n\1mPrivate message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s',
+        '\1n\1mPrivate message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s\r\n',
         update.data.from_user, update.data.from_system, update.data.text
       ));
       break;
