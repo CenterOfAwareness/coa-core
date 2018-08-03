@@ -1,3 +1,5 @@
+require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
+
 /**
  * An interface to the COA Systems database
  * @constructor
@@ -30,19 +32,19 @@ function COA_Systems(coa) {
  * @returns {object} The requested data
  */
 COA_Systems.prototype.get = function (system) {
-
-}
-
-/**
- * Subscribe for any updates to the coa_systems database<br>
- * You must set the 'callback' property in order to react to updates.
- * @returns{undefined}
- **/
-COA_Systems.prototype.subscribe = function () {
-
+  var path = 'coa_systems';
+  if (typeof system != 'undefined') {
+    if (!coa_validate.alias(system)) {
+      throw new Error('COA_Systems: Invalid system name ' + system);
+    }
+    path += '.' + system;
+  }
+  return this.coa.read('coa_systems', path, 1);
 }
 
 // client/client.js use only
 COA_Systems.prototype.ping = function () {
-
-}
+  this.coa.write(
+    'coa_systems', 'coa_systems.' + this.coa.system_name + '.ping', null, 2
+  );
+};
