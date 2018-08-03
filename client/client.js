@@ -33,21 +33,29 @@ function reconnect() {
   event_reconnect.abort = true;
 }
 
-function message_all_nodes(msg) {
+function message_all_nodes(msg, sys, u) {
+  var usr = new User(0);
   system.node_list.forEach(function (e, i) {
-    if (user_online(e)) system.put_node_message(i + 1, msg);
+    if (!user_online(e)) return;
+    if (sys == coa.system_name) {
+      usr.number = e.useron;
+      if (usr.alias == u) return;
+    }
+    system.put_node_message(i + 1, msg);
   });
+  usr = undefined;
 }
 
 function message_online_user(user, msg) {
+  var usr = new User(e.useron);
   system.node_list.forEach(function (e, i) { // If on multiple nodes, msg each
     if (!user_online(e)) return;
-    const usr = new User(e.useron);
+    usr.number = e.useron;
     if (usr.alias.toLowerCase() == user.toLowerCase()) {
       system.put_node_message(i + 1, msg);
     }
-    usr = undefined;
   });
+  usr = undefined;
 }
 
 announce.callback = function (update) {
@@ -56,9 +64,10 @@ announce.callback = function (update) {
       message_all_nodes(format(
         '\1n\1mGlobal message from \1h\1m%s\1n\1m@\1h\1m%s\1n\1m:\r\n%s\rn',
         update.data.from_user, update.data.from_system, update.data.text
-      ));
+      ), update.data.from_system, update.data.from_user);
       break;
     case 'presence_message':
+      if (update.data.from_system == coa.system_name) return;
       var action = null;
       if (update.data.action == 'logon') {
         action = 'logged on';
@@ -69,7 +78,7 @@ announce.callback = function (update) {
         message_all_nodes(format(
           '\1h\1m%s\1n\1m: \1h\1w%s \1n\1m%s\r\n',
           update.data.from_system, update.data.from_user, action
-        ));
+        ), update.data.from_system, update.data.from_user);
       }
       break;
     case 'user_message':
