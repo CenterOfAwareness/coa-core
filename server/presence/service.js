@@ -14,7 +14,7 @@ presence.subscribe(function (update) {
       announce.presence(update.data.system, update.data.user, 'logon');
       break;
     case 'node_logoff':
-      announce.presence(udpate.data.system, update.data.user, 'logoff');
+      announce.presence(update.data.system, update.data.user, 'logoff');
       break;
     default:
       break;
