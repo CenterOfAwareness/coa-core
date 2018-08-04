@@ -34,7 +34,7 @@ this.QUERY = function (client, packet) {
           name : msg_area.grp[c].name,
           description : msg_area.grp[c].description,
           ars : msg_area.grp[c].ars,
-          subs : msg_area.grp_list[msg_area.grp[c].number].sub_list.map(
+          subs : msg_area.grp[c].sub_list.map(
             function (e) {
               return {
                 code : e.code,
@@ -72,7 +72,7 @@ this.QUERY = function (client, packet) {
       if (!xtrn_area.sec[c]) return a;
       a[c] = {
         name : xtrn_area.sec[c].name,
-        code : xtrn-area.sec[c].code,
+        code : xtrn_area.sec[c].code,
         ars : xtrn_area.sec[c].ars,
         programs : xtrn_area.sec[c].prog_list.map(function (e) {
           return {
