@@ -65,8 +65,7 @@ this.QUERY = function (client, packet) {
           }
           break;
         case 'presence':
-          if (alias != coa_settings.server.superuser
-          ) {
+          if (alias != coa_settings.server.superuser) {
             ret = true;
             log(LOG_INFO, format(
               'Announce: %s tried to write to global.presence from %s',
