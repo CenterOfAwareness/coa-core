@@ -11,11 +11,20 @@ this.QUERY = function (client, packet) {
     return true; // Handled
   }
 
-  const allowed_operations = ['READ'];
+  const allowed_operations = ['READ', 'WRITE', 'SUBSCRIBE'];
   const loc = packet.location.split('.');
   const alias = admin.authenticated[client.id].alias;
 
-  if (loc[0] != 'coa_cnf' || packet.oper != 'READ' || loc.length > 2) {
+  if (
+    // Must be coa_cnf[something]
+    loc[0] != 'coa_cnf'
+    || loc.length != 2
+    || allowed_operations.indexOf(packet.oper) < 0
+    // Only superuser may write (to coa_cnf.update)
+    || (packet.oper == 'WRITE' && alias != coa_settings.server.superuser)
+    // coa_cnf.update is the only subscribable location
+    || (packet.oper == 'SUBSCRIBE' && loc[2] != 'update')
+  ) {
     log(LOG_INFO, format(
       'CNF: %s tried %s on %s from %s',
       alias, packet.oper, packet.location, client.remote_ip_address
@@ -64,6 +73,8 @@ this.QUERY = function (client, packet) {
       data : data
     });
 
+    return true; // Handled
+
   // Send a list of all exportable xtrn sections & their program lists
   } else if (loc[1] == 'xtrn') {
 
@@ -100,15 +111,18 @@ this.QUERY = function (client, packet) {
       data : data
     });
 
+    return true; // Handled
+
   } else {
 
     log(LOG_INFO, format(
       'CNF: %s tried to read %s from %s',
       alias, packet.location, client.remote_ip_address
     ));
+    return true; // Handled
 
   }
 
-  return true; // Handled
+  return false; // Command may proceed
 
 }
