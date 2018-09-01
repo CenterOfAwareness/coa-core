@@ -1,4 +1,5 @@
 require(system.mods_dir + '/coa/common/settings.js', 'coa_settings');
+require(system.mods_dir + '/coa/common/messages.js', 'coa_lib_messages');
 
 this.QUERY = function (client, packet) {
 
@@ -36,33 +37,8 @@ this.QUERY = function (client, packet) {
   if (loc[1] == 'messages') {
 
     if (!coa_settings.server.export_message_groups) return true;
-    const data = coa_settings.server.export_message_groups.reduce(
-      function (a, c) {
-        if (!msg_area.grp[c]) return a;
-        a[c] = {
-          name : msg_area.grp[c].name,
-          description : msg_area.grp[c].description,
-          ars : msg_area.grp[c].ars,
-          subs : msg_area.grp[c].sub_list.map(
-            function (e) {
-              return {
-                code : e.code,
-                name : e.name,
-                description : e.description,
-                ars : {
-                  all : e.ars,
-                  read : e.read_ars,
-                  post : e.post_ars,
-                  operator : e.operator_ars,
-                  moderated : e.moderated_ars,
-                },
-                settings : e.settings
-              }
-            }
-          )
-        };
-        return a;
-      }, {}
+    const data = coa_lib_messages.load_message_groups(
+      coa_settings.server.export_message_groups
     );
 
     client.sendJSON({
