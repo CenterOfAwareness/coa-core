@@ -6,25 +6,31 @@ const coa_lib_messages = {
       name : msg_area.grp[g].name,
       description : msg_area.grp[g].description,
       ars : msg_area.grp[g].ars,
-      subs : msg_area.grp[g].sub_list.map(
-        function (e) {
-          return {
-            code : e.code,
-            name : e.name,
-            description : e.description,
-            ars : {
-              all : e.ars,
-              read : e.read_ars,
-              post : e.post_ars,
-              operator : e.operator_ars,
-              moderated : e.moderated_ars,
-            },
-            settings : e.settings
-          }
+      subs : msg_area.grp[g].sub_list.map(function (e) {
+        return {
+          code : e.code,
+          name : e.name,
+          description : e.description,
+          ars : {
+            all : e.ars,
+            read : e.read_ars,
+            post : e.post_ars,
+            operator : e.operator_ars,
+            moderated : e.moderated_ars,
+          },
+          settings : e.settings
         }
-      )
+      })
     };
   },
+
+  load_message_groups : function (g) {
+    return g.reduce(function (a, c) {
+      if (!msg_area.grp[c]) return a;
+      a[c] = load_message_group(c);
+      return a;
+    }, {});
+  }
 
   compare_message_sub : function (a, b) {
     return Object.keys(a).every(function (e) {
