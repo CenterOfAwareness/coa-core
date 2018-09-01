@@ -10,7 +10,9 @@ const timer = new Timer();
 const coa = new COA();
 
 coa_settings.export_message_groups.forEach(function (e) {
-  state.msg[e] = coa_lib_messages.load_message_group(e);
+  state.msg[e] = coa_lib_messages.load_message_groups(
+    coa_settings.server.export_message_groups
+  );
 });
 
 while (!js.terminated) {
