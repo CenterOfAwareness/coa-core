@@ -203,7 +203,7 @@ COA_Presence.prototype.subscribe = function (callback) {
 }
 
 /**
- * Unsubscribe from updates<br>
+ * Unsubscribe from updates
  * @returns {undefined}
  */
 COA_Presence.prototype.unsubscribe = function () {
