@@ -34,7 +34,8 @@ const coa_lib_messages = {
       name : msg_area.grp[g].name,
       description : msg_area.grp[g].description,
       ars : msg_area.grp[g].ars,
-      subs : msg_area.grp[g].sub_list.map(this.load_message_sub(e));
+      subs : msg_area.grp[g].sub_list.map(this.load_message_sub(e))
+    };
   },
 
   /**
