@@ -16,8 +16,8 @@ if (coa_settings.server) {
     coa_settings.server.export_message_groups
     = coa_settings.server.export_message_groups.split(',');
   }
-  if (coa_settings.server.export_xtrn_groups) {
-    coa_settings.server.export_xtrn_groups
-    = coa_settings.server.export_xtrn_groups.split(',');
+  if (coa_settings.server.export_xtrn_sections) {
+    coa_settings.server.export_xtrn_sections
+    = coa_settings.server.export_xtrn_sections.split(',');
   }
 }
