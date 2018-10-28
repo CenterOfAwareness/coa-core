@@ -1,3 +1,4 @@
+// jsexec ./publish.js [messages,xtrn]
 require(system.mods_dir + '/coa/client/lib/coa.js', 'COA');
 
 if (argv.length != 1 || ['messages', 'xtrn'].indexOf(argv[0]) < 0) {
