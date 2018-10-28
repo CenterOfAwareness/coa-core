@@ -6,6 +6,7 @@ require(system.mods_dir + '/coa/client/lib/coa.js', 'COA');
 require(system.mods_dir + '/coa/client/lib/presence.js', 'COA_Presence');
 require(system.mods_dir + '/coa/client/lib/announce.js', 'COA_Announce');
 require(system.mods_dir + '/coa/client/lib/systems.js', 'COA_Systems');
+require(system.mods_dir + '/coa/client/lib/cnf.js', 'COA_CNF');
 
 var event_reconnect = null;
 
@@ -14,6 +15,7 @@ const coa = new COA();
 const presence = new COA_Presence(coa);
 const announce = new COA_Announce(coa);
 const systems = new COA_Systems(coa);
+const cnf = new COA_CNF(coa);
 
 function user_online(node) {
   return (node.status&NODE_INUSE || node.status&NODE_QUIET);
