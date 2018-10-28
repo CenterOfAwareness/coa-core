@@ -24,10 +24,9 @@ function COA_Announce(coa) {
       callback = cb;
     }
   });
-  coa.set_callback(
-    'coa_announce', function (update) {
-      self._handle_update(update, callback);
-    });
+  coa.set_callback('coa_announce', function (update) {
+    self._handle_update(update, callback);
+  });
 }
 
 COA_Announce.prototype._get_path = function (location) {
@@ -42,9 +41,7 @@ COA_Announce.prototype._get_path = function (location) {
       location = 'systems.' + this.coa.system_name;
       break;
     default:
-      throw new Error(
-        'COA_Announce: invalid location ' + location
-      );
+      throw new Error('COA_Announce: invalid location ' + location);
       break;
   }
   return 'coa_announce.' + location;
