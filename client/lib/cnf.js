@@ -1,5 +1,5 @@
 load('sbbsdefs.js');
-require('cnflib.js', CNF);
+require('cnflib.js', 'CNF');
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
 function apply_messages(data) {
@@ -9,9 +9,79 @@ function apply_messages(data) {
 }
 
 function apply_xtrn(data) {
-  // validate data
-  // compare with existing local config
-  // write anything from COA that is not consistent with local config
+  if (typeof data != 'object') return;
+  const xtrn_cnf = CNF.read(system.ctrl_dir + 'xtrn.cnf');
+  if (!xtrn_cnf) throw new Error('COA_CNF: Unable to open xtrn.cnf');
+  var change = false;
+  Object.keys(data).forEach(function (e) { // External Program section
+    if (!coa_validate.xtrn_section(data[e])) {
+      log(LOG_ERR, 'COA_CNF: Invalid xtrn section ' + JSON.stringify(data[e]));
+      return;
+    }
+    var sec_idx = -1;
+    xtrn_cnf.xtrnsec.some(function (ee, ii) {
+      if (ee.code.toLowerCase() == e.toLowerCase()) {
+        sec_idx = ii;
+        return true;
+      }
+      return false;
+    });
+    if (!sec_idx < 0) {
+      xtrn_cnf.xtrnsec.push({
+        name : data[e].name,
+        code : data[e].code,
+        ars : data[e].ars
+      });
+      change = true;
+      sec_idx = xtrn_cnf.xtrnsec.length - 1;
+    }
+    data[e].programs.forEach(function (ee) {
+      var prog_idx = -1;
+      const rec = {
+        sec : sec_idx,
+        name : ee.name,
+        code : ee.code,
+        ars : ee.ars,
+        execution_ars : ee.execution_ars,
+        type : ee.dropfile_type,
+        settings : ee.settings,
+        event : ee.event_type,
+        cost : 0,
+        cmd : ee.command,
+        clean_cmd : ee.clean_up_command,
+        startup_dir : ee.startup_dir,
+        textra : 0,
+        max_time : 0
+      };
+      xtrn_cnf.xtrn.some(function (eee, iii) {
+        if (eee.code.toLowerCase() == ee.code.toLowerCase()) {
+          prog_idx = iii;
+          return true;
+        }
+        return false;
+      });
+      if (prog_idx > 0) {
+        var update = Object.keys(rec).every(function (eee) {
+          return rec[eee] == xtrn_cnf.xtrn[prog_idx][eee]
+        });
+        if (update) {
+          xtrn_cnf.xtrn[prog_idx] = rec;
+          change = true;
+        }
+      } else {
+        xtrn_cnf.xtrn.push(rec);
+        change = true;
+      }
+    });
+  });
+  if (change) {
+    log(LOG_DEBUG, 'COA_CNF: Backing up xtrn.cnf');
+    file_backup(system.ctrl_dir + 'xtrn.cnf');
+    log(LOG_DEBUG, 'COA_CNF: Writing changes to xtrn.cnf');
+    if (!CNF.write('xtrn.cnf', undefined, xtrn_cnf)) {
+      throw new Error('COA_CNF: Failed to write xtrn.cnf.');
+    }
+  }
 }
 
 function COA_CNF(coa) {
@@ -22,15 +92,11 @@ COA_CNF.prototype.read = function (loc) {
   if (['messages', 'xtrn'].indexOf(loc) < 0) {
     throw new Error('COA_CNF: Invalid read location ' + loc);
   }
-  try {
-    const data = this.coa.read('coa_cnf', loc, 1);
-    if (loc == 'messages') {
-      apply_messages(data);
-    } else if (loc == 'xtrn') {
-      apply_xtrn(data);
-    }
-  } catch (err) {
-    log(LOG_ERR, 'COA_CNF: ' + err);
+  const data = this.coa.read('coa_cnf', loc, 1);
+  if (loc == 'messages') {
+    apply_messages(data);
+  } else if (loc == 'xtrn') {
+    apply_xtrn(data);
   }
 }
 
@@ -40,7 +106,11 @@ COA_CNF.prototype.subscribe = function () {
     const loc = update.location.split('.');
     if (loc[1] != 'update') return;
     if (['messages', 'xtrn'].indexOf(update.data) < 0) return;
-    self.read(update.data);
+    try {
+      self.read(update.data);
+    } catch (err) {
+      log(LOG_ERR, 'COA_CNF: Update error: ' + err);
+    }
   });
   this.coa.subscribe('coa_cnf', 'update');
 }
