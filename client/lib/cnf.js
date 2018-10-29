@@ -61,10 +61,11 @@ function apply_xtrn(data) {
         return false;
       });
       if (prog_idx > 0) {
-        var update = Object.keys(rec).every(function (eee) {
+        const unchanged = Object.keys(rec).every(function (eee) {
           return rec[eee] == xtrn_cnf.xtrn[prog_idx][eee]
         });
-        if (update) {
+        if (!unchanged) {
+          log(LOG_DEBUG, 'COA_CNF: Updating external program ' + rec.code);
           xtrn_cnf.xtrn[prog_idx] = rec;
           change = true;
         }
