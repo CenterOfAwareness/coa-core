@@ -35,7 +35,9 @@ function apply_xtrn(data) {
       change = true;
       sec_idx = xtrn_cnf.xtrnsec.length - 1;
     }
+    const codes = [];
     data[e].programs.forEach(function (ee) {
+      codes.push(ee.code.toLowerCase());
       var prog_idx = -1;
       const rec = {
         sec : sec_idx,
@@ -74,12 +76,19 @@ function apply_xtrn(data) {
         change = true;
       }
     });
+    xtrn_cnf.xtrn.forEach(function (ee, ii) {
+      if (ee.sec != sec_idx) return;
+      if (codes.indexOf(ee.code.toLowerCase()) > -1) return;
+      log(LOG_DEBUG, 'COA_CNF: Removing external program ' + ee.code);
+      xtrn_cnf.xtrn.splice(ii, 1);
+      change = true;
+    });
   });
   if (change) {
     log(LOG_DEBUG, 'COA_CNF: Backing up xtrn.cnf');
     file_backup(system.ctrl_dir + 'xtrn.cnf');
     log(LOG_DEBUG, 'COA_CNF: Writing changes to xtrn.cnf');
-    if (!CNF.write('xtrn.cnf', undefined, xtrn_cnf)) {
+    if (!CNF.write(system.ctrl_dir + 'xtrn.cnf', undefined, xtrn_cnf)) {
       throw new Error('COA_CNF: Failed to write xtrn.cnf.');
     }
   }
