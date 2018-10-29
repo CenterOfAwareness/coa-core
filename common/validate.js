@@ -75,6 +75,35 @@ const coa_validate = {
     );
   },
 
+  cnf_message_sub : function (v) {
+    return (
+      typeof v == 'object'
+      && typeof v.code == 'string' // && length? 8? 16 w/prefix?
+      && typeof v.name == 'string' // && length?
+      && typeof v.descritpion == 'string' // && length?
+      && typeof v.settings == 'number'
+      && v.settings >= 0
+      && v.settings <= 2147483647
+      && typeof v.ars == 'object'
+      && typeof v.ars.all == 'string'
+      && typeof v.ars.read == 'string'
+      && typeof v.ars.post == 'string'
+      && typeof v.ars.operator == 'string'
+      && typeof v.ars.moderated == 'string'
+    );
+  },
+
+  cnf_message_group : function (v) {
+    return (
+      typeof v == 'object',
+      && typeof v.name == 'string' // && length?
+      && typeof v.description == 'string' // && length?
+      && typeof v.ars == 'string'
+      && Array.isArray(v.subs)
+      && v.subs.every(this.cnf_message_sub)
+    );
+  },
+
   cnf_xtrn_program : function (v) {
     return (
       typeof v == 'object'
@@ -87,7 +116,7 @@ const coa_validate = {
       && typeof v.execution_ars == 'string'
       && typeof v.settings == 'number'
       && v.settings >= 0
-      && v.settings <= 16777215 // 20 bits currently used, we'll call it 24
+      && v.settings <= 16777215
       && typeof v.dropfile_type == 'number'
       && v.dropfile_type > -1
       && v.dropfile_type < 12

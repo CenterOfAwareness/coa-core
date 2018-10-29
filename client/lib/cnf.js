@@ -3,9 +3,65 @@ require('cnflib.js', 'CNF');
 require(system.mods_dir + '/coa/common/validate.js', 'coa_validate');
 
 function apply_messages(data) {
-  // validate data
-  // compare with existing local config
-  // write anything from COA that is not consistent with local config
+  if (typeof data != 'object') return;
+  const msgs_cnf = CNF.read(system.ctrl_dir + 'msgs.cnf');
+  if (!msgs_cnf) throw new Error('COA_CNF: Unable to open msgs.cnf');
+  var change = false;
+  Object.keys(data).forEach(function (e) {
+    if (!coa_validate.cnf_message_group(data[e])) {
+      log(LOG_ERR, 'COA_CNF: Invalid message group ' + JSON.stringify(data[e]));
+      return;
+    }
+    var grp_idx = -1;
+    msgs_cnf.grp.some(function (ee, ii) {
+      if (ee.code.toLowerCase() != e.toLowerCase()) return false;
+      grp_idx = ii;
+      return true;
+    });
+    if (grp_idx < 0) {
+      msgs_cnf.grp.push({
+        description : data[e].description,
+        name : data[e].name,
+        ars : data[e].ars,
+        code_prefix : ''
+      });
+      change = true;
+      grp_idx = msgs_cnf.grp.length - 1;
+    }
+    const codes = [];
+    data[e].subs.forEach(function (ee) {
+      codes.push(ee.code.toLowerCase());
+      var sub_idx = -1;
+      const rec = {
+        grp_number : grp_idx,
+        description : ee.description,
+        name : ee.name,
+        qwk_name : ee.code,
+        code_suffix : ee.code,
+        data_dir : '',
+        ars : ee.ars.all,
+        read_ars : ee.ars.read,
+        post_ars : ee.ars.post,
+        operator_ars : ee.ars.operator,
+        moderated_ars : ee.ars.moderated,
+        settings : ee.settings,
+        qwknet_tagline : '',
+        fidonet_origin : '',
+        post_sem : '',
+        newsgroup : ee.code,
+        faddr : {
+          faddr1 : 0,
+          faddr2 : 0,
+          faddr3 : 0,
+          faddr4 : 0
+        },
+        max_msgs : 10000,
+        max_crcs : 10000,
+        max_age : 0,
+        ptridx : 0 // uhh...
+      }
+    })
+  });
 }
 
 function apply_xtrn(data) {
@@ -13,20 +69,18 @@ function apply_xtrn(data) {
   const xtrn_cnf = CNF.read(system.ctrl_dir + 'xtrn.cnf');
   if (!xtrn_cnf) throw new Error('COA_CNF: Unable to open xtrn.cnf');
   var change = false;
-  Object.keys(data).forEach(function (e) { // External Program section
-    if (!coa_validate.xtrn_section(data[e])) {
+  Object.keys(data).forEach(function (e) {
+    if (!coa_validate.cnf_xtrn_section(data[e])) {
       log(LOG_ERR, 'COA_CNF: Invalid xtrn section ' + JSON.stringify(data[e]));
       return;
     }
     var sec_idx = -1;
     xtrn_cnf.xtrnsec.some(function (ee, ii) {
-      if (ee.code.toLowerCase() == e.toLowerCase()) {
-        sec_idx = ii;
-        return true;
-      }
-      return false;
+      if (ee.code.toLowerCase() != e.toLowerCase()) return false;
+      sec_idx = ii;
+      return true;
     });
-    if (!sec_idx < 0) {
+    if (sec_idx < 0) {
       xtrn_cnf.xtrnsec.push({
         name : data[e].name,
         code : data[e].code,
