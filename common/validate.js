@@ -73,6 +73,39 @@ const coa_validate = {
         return ['from_system', 'from_user', 'to_user', 'text'].indexOf(e) > -1;
       })
     );
+  },
+
+  cnf_xtrn_program : function (v) {
+    return (
+      typeof v == 'object'
+      && typeof v.code == 'string' // && length? 8? 16 w/prefix?
+      && typeof v.name == 'string' // && length?
+      && typeof v.command == 'string'
+      && typeof v.clean_up_command == 'string'
+      && typeof v.startup_dir == 'string'
+      && typeof v.ars == 'string'
+      && typeof v.execution_ars == 'string'
+      && typeof v.settings == 'number'
+      && v.settings >= 0
+      && v.settings <= 16777215 // 20 bits currently used, we'll call it 24
+      && typeof v.dropfile_type == 'number'
+      && v.dropfile_type > -1
+      && v.dropfile_type < 12
+      && typeof v.event_type == 'number'
+      && v.event_type >= 0
+      && v.event_type <= 255 // Probably more like 8
+    );
+  },
+
+  cnf_xtrn_section : function (v) {
+    return (
+      typeof v == 'object'
+      && typeof v.name == 'string' // && length?
+      && typeof v.code == 'string' // && length? 8? 16 w/prefix?
+      && typeof v.ars == 'string'
+      && Array.isArray(v.programs)
+      && v.programs.every(this.cnf_xtrn_program)
+    );
   }
 
 };
