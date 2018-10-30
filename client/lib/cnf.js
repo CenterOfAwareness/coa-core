@@ -195,11 +195,23 @@ function apply_xtrn(data) {
   }
 }
 
+/**
+ * An interface to the COA CNF database which holds message group & external
+ * program area configuration data.  This is only intended to be used by the
+ * coa-core client.
+ * @constructor
+ * @param {COA} coa - An instance of the COA object (client/lib/coa.js)
+ */
 function COA_CNF(coa) {
   Object.defineProperty(this, 'coa', { value : coa });
 }
 
-COA_CNF.prototype.read = function (loc) {
+/**
+ * Synchronize local message base or xtrn area config with remote
+ * @param {string} loc 'messages' or 'xtrn'
+ * @returns {undefined}
+ */
+COA_CNF.prototype.sync = function (loc) {
   if (['messages', 'xtrn'].indexOf(loc) < 0) {
     throw new Error('COA_CNF: Invalid read location ' + loc);
   }
@@ -211,6 +223,11 @@ COA_CNF.prototype.read = function (loc) {
   }
 }
 
+/**
+ * Subscribe for updates & automatic synchronization
+ * This should really only be used within the coa-core client
+ * @returns {undefined}
+ */
 COA_CNF.prototype.subscribe = function () {
   const self = this;
   this.coa.set_callback('coa_cnf', function (update) {
@@ -218,7 +235,7 @@ COA_CNF.prototype.subscribe = function () {
     if (loc[1] != 'update') return;
     if (['messages', 'xtrn'].indexOf(update.data) < 0) return;
     try {
-      self.read(update.data);
+      self.sync(update.data);
     } catch (err) {
       log(LOG_ERR, 'COA_CNF: Update error: ' + err);
     }
