@@ -11,13 +11,9 @@ const coa_settings = f.iniGetAllObjects().reduce(function (a, c) {
 }, {});
 f.close();
 // Convert list values to Arrays
-if (coa_settings.server) {
-  if (coa_settings.server.export_message_groups) {
-    coa_settings.server.export_message_groups
-    = coa_settings.server.export_message_groups.split(',');
-  }
-  if (coa_settings.server.export_xtrn_sections) {
-    coa_settings.server.export_xtrn_sections
-    = coa_settings.server.export_xtrn_sections.split(',');
-  }
+if (coa_settings.message_groups) {
+  coa_settings.message_groups = coa_settings.message_groups.split(',');
+}
+if (coa_settings.xtrn_sections) {
+  coa_settings.xtrn_sections = coa_settings.xtrn_sections.split(',');
 }
