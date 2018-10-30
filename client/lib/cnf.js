@@ -7,6 +7,9 @@ function apply_messages(data) {
   const msgs_cnf = CNF.read(system.ctrl_dir + 'msgs.cnf');
   if (!msgs_cnf) throw new Error('COA_CNF: Unable to open msgs.cnf');
   var change = false;
+  var ptr_idx = msgs_cnf.sub.reduce(function (a, c) {
+    if (c.ptridx > a) return c.ptridx;
+  }, 0);
   Object.keys(data).forEach(function (e) {
     if (!coa_validate.cnf_message_group(data[e])) {
       log(LOG_ERR, 'COA_CNF: Invalid message group ' + JSON.stringify(data[e]));
@@ -59,9 +62,28 @@ function apply_messages(data) {
         max_crcs : 10000,
         max_age : 0,
         ptridx : 0 // uhh...
+      };
+      msgs_cnf.sub.some(function (eee, iii) {
+        if (eee.code.toLowerCase() != ee.code.toLowerCase()) return false;
+        sub_idx = iii;
+        return true;
+      });
+      if (sub_idx >= 0) { // Sub already exists locally
+        // Check for (relevant) changes
+        // if changed merge relevant changes from rec
+        // set change true (must write)
+      } else {
+        // set rec.ptr_idx to ptr_idx
+        // advance ptr_idx
+        // push rec to msgs_cnf.sub
+        // set change true (must write)
       }
     })
+    // scan for deleted subs in this group
+    // splice out any deleted subs
+    // if deleting, set change true (must write)
   });
+  // if change, back up msgs.cnf, write data
 }
 
 function apply_xtrn(data) {
@@ -110,13 +132,11 @@ function apply_xtrn(data) {
         max_time : 0
       };
       xtrn_cnf.xtrn.some(function (eee, iii) {
-        if (eee.code.toLowerCase() == ee.code.toLowerCase()) {
-          prog_idx = iii;
-          return true;
-        }
-        return false;
+        if (eee.code.toLowerCase() != ee.code.toLowerCase()) return false;
+        prog_idx = iii;
+        return true;
       });
-      if (prog_idx > 0) {
+      if (prog_idx >= 0) { // Program already exists locally
         const unchanged = Object.keys(rec).every(function (eee) {
           return rec[eee] == xtrn_cnf.xtrn[prog_idx][eee]
         });
