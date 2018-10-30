@@ -50,31 +50,6 @@ const coa_lib_messages = {
       a[c] = self.load_message_group(c);
       return a;
     }, {});
-  },
-
-  compare_message_sub : function (a, b) {
-    return Object.keys(a).every(function (e) {
-      if (e != 'ars') {
-        return a[e] == b[e];
-      } else {
-        if (typeof b[e] == 'undefined') return false;
-        return Object.keys(a[e]).every(function (ee) {
-          return a[e][ee] == b[e][ee];
-        });
-      }
-    });
-  },
-
-  compare_message_group : function (a, b) {
-    const self = this;
-    return Object.keys(a).every(function (e) {
-      if (e != 'subs') {
-        return a[e] == b[e];
-      } else {
-        if (typeof b[e] == 'undefined') return false;
-        return self.compare_message_sub(a[e], b[e]);
-      }
-    });
   }
 
 };
