@@ -39,9 +39,9 @@ this.QUERY = function (client, packet) {
   // Send a list of all exportable message groups & their subs
   if (loc[1] == 'messages') {
 
-    if (!coa_settings.server.export_message_groups) return true;
+    if (!coa_settings.message_groups) return true;
     const data = coa_lib_messages.load_message_groups(
-      coa_settings.server.export_message_groups
+      coa_settings.message_groups
     );
 
     client.sendJSON({
@@ -57,9 +57,9 @@ this.QUERY = function (client, packet) {
   // Send a list of all exportable xtrn sections & their program lists
   } else if (loc[1] == 'xtrn') {
 
-    if (!coa_settings.server.export_xtrn_groups) return true;
+    if (!coa_settings.xtrn_sections) return true;
     const data = coa_lib_xtrn.load_xtrn_sections(
-      coa_settings.server.export_xtrn_sections
+      coa_settings.xtrn_sections
     );
 
     client.sendJSON({
