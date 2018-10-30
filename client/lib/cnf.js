@@ -69,21 +69,48 @@ function apply_messages(data) {
         return true;
       });
       if (sub_idx >= 0) { // Sub already exists locally
-        // Check for (relevant) changes
-        // if changed merge relevant changes from rec
-        // set change true (must write)
-      } else {
-        // set rec.ptr_idx to ptr_idx
-        // advance ptr_idx
-        // push rec to msgs_cnf.sub
-        // set change true (must write)
+        const keys = [
+          'description',
+          'name',
+          'ars',
+          'read_ars',
+          'post_ars',
+          'operator_ars',
+          'moderated_ars'
+        ];
+        const unchanged = keys.every(function (eee) {
+          return rec[eee] == msgs_cnf.sub[sub_idx][eee];
+        });
+        if (!unchanged) {
+          log(LOG_DEBUG, 'COA_CNF: Updating message sub ' + rec.code);
+          keys.forEach(function (eee) {
+            msgs_cnf.sub[sub_idx][eee] = rec[eee];
+          });
+          change = true;
+        }
+      } else { // Sub must be added to local database
+        rec.ptridx = ptr_idx;
+        ptr_idx++;
+        msgs_cnf.sub.push(rec);
+        change = true;
       }
-    })
-    // scan for deleted subs in this group
-    // splice out any deleted subs
-    // if deleting, set change true (must write)
+    });
+    msgs_cnf.sub.forEach(function (ee, ii) {
+      if (ee.grp_number != grp_idx) return;
+      if (codes.indexOf(ee.code.toLowerCase()) > -1) return;
+      log(LOG_DEBUG, 'COA_CNF: Removing message sub ' + ee.code);
+      msgs_cnf.sub.splice(ii, 1);
+      change = true;
+    });
   });
-  // if change, back up msgs.cnf, write data
+  if (change) {
+    log(LOG_DEBUG, 'COA_CNF: Backing up msgs.cnf');
+    file_backup(system.ctrl_dir + 'msgs.cnf');
+    log(LOG_DEBUG, 'COA_CNF: Writing changes to msgs.cnf');
+    if (!CNF.write(system.ctrl_dir + 'msgs.cnf', undefined, msgs_cnf)) {
+      throw new Error('COA_CNF: Failed to write msgs.cnf');
+    }
+  }
 }
 
 function apply_xtrn(data) {
@@ -163,7 +190,7 @@ function apply_xtrn(data) {
     file_backup(system.ctrl_dir + 'xtrn.cnf');
     log(LOG_DEBUG, 'COA_CNF: Writing changes to xtrn.cnf');
     if (!CNF.write(system.ctrl_dir + 'xtrn.cnf', undefined, xtrn_cnf)) {
-      throw new Error('COA_CNF: Failed to write xtrn.cnf.');
+      throw new Error('COA_CNF: Failed to write xtrn.cnf');
     }
   }
 }
