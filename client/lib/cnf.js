@@ -61,7 +61,7 @@ function apply_messages(data) {
         max_msgs : 10000,
         max_crcs : 10000,
         max_age : 0,
-        ptridx : 0 // uhh...
+        ptridx : 0
       };
       msgs_cnf.sub.some(function (eee, iii) {
         if (eee.code.toLowerCase() != ee.code.toLowerCase()) return false;
