@@ -82,7 +82,7 @@ function apply_messages(data) {
           return rec[eee] == msgs_cnf.sub[sub_idx][eee];
         });
         if (!unchanged) {
-          log(LOG_DEBUG, 'COA_CNF: Updating message sub ' + rec.code);
+          log(LOG_INFO, 'COA_CNF: Updating message sub ' + rec.code);
           keys.forEach(function (eee) {
             msgs_cnf.sub[sub_idx][eee] = rec[eee];
           });
@@ -91,6 +91,7 @@ function apply_messages(data) {
       } else { // Sub must be added to local database
         rec.ptridx = ptr_idx;
         ptr_idx++;
+        log(LOG_INFO, 'COA_CNF: Adding message sub ' + rec.code);
         msgs_cnf.sub.push(rec);
         change = true;
       }
@@ -98,7 +99,7 @@ function apply_messages(data) {
     msgs_cnf.sub.forEach(function (ee, ii) {
       if (ee.grp_number != grp_idx) return;
       if (codes.indexOf(ee.code.toLowerCase()) > -1) return;
-      log(LOG_DEBUG, 'COA_CNF: Removing message sub ' + ee.code);
+      log(LOG_INFO, 'COA_CNF: Removing message sub ' + ee.code);
       msgs_cnf.sub.splice(ii, 1);
       change = true;
     });
@@ -168,11 +169,12 @@ function apply_xtrn(data) {
           return rec[eee] == xtrn_cnf.xtrn[prog_idx][eee]
         });
         if (!unchanged) {
-          log(LOG_DEBUG, 'COA_CNF: Updating external program ' + rec.code);
+          log(LOG_INFO, 'COA_CNF: Updating external program ' + rec.code);
           xtrn_cnf.xtrn[prog_idx] = rec;
           change = true;
         }
       } else {
+        log(LOG_INFO, 'COA_CNF: Adding external program ' + rec.code);
         xtrn_cnf.xtrn.push(rec);
         change = true;
       }
@@ -180,7 +182,7 @@ function apply_xtrn(data) {
     xtrn_cnf.xtrn.forEach(function (ee, ii) {
       if (ee.sec != sec_idx) return;
       if (codes.indexOf(ee.code.toLowerCase()) > -1) return;
-      log(LOG_DEBUG, 'COA_CNF: Removing external program ' + ee.code);
+      log(LOG_INFO, 'COA_CNF: Removing external program ' + ee.code);
       xtrn_cnf.xtrn.splice(ii, 1);
       change = true;
     });
