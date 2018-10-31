@@ -13,7 +13,7 @@ this.QUERY = function (client, packet) {
     return true; // Handled
   }
 
-  const allowed_operations = ['READ', 'WRITE', 'SUBSCRIBE'];
+  const allowed_operations = ['READ', 'WRITE', 'SUBSCRIBE', 'UNSUBSCRIBE'];
   const loc = packet.location.split('.');
   const alias = admin.authenticated[client.id].alias;
 
@@ -37,7 +37,7 @@ this.QUERY = function (client, packet) {
   }
 
   // Send a list of all exportable message groups & their subs
-  if (loc[1] == 'messages') {
+  if (packet.oper == 'READ' && loc[1] == 'messages') {
 
     if (!coa_settings.message_groups) return true;
     const data = coa_lib_messages.load_message_groups(
@@ -55,7 +55,7 @@ this.QUERY = function (client, packet) {
     return true; // Handled
 
   // Send a list of all exportable xtrn sections & their program lists
-  } else if (loc[1] == 'xtrn') {
+  } else if (packet.oper == 'READ' && loc[1] == 'xtrn') {
 
     if (!coa_settings.xtrn_sections) return true;
     const data = coa_lib_xtrn.load_xtrn_sections(
