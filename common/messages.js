@@ -1,3 +1,5 @@
+load('sbbsdefs.js');
+
 const coa_lib_messages = {
 
   /**
@@ -50,6 +52,61 @@ const coa_lib_messages = {
       a[c] = self.load_message_group(c);
       return a;
     }, {});
+  },
+
+  /**
+   * Returns true if a message was posted locally
+   * @param {object} h A message header (MsgBase.get_msg_header())
+   * @returns {boolean}
+   */
+  is_local_message : function (h) {
+    const match = h.id.match(/\<.*@(.*)\>/);
+    if (match == null) throw 'Failed to parse message ID';
+    return match[1] == system.inet_addr;
+  },
+
+  /**
+   * Returns the header of the last non-local message in a sub
+   * @param {string} s A sub-board's internal code
+   * @returns {(object|undefined)} A message header, or undefined
+   */
+  last_remote_message : function (s) {
+    var h;
+    var hh;
+    const mb = new MsgBase(s);
+    mb.open();
+    for (var n = mb.first_msg; n <= mb.last_msg; n++) {
+      h = mb.get_msg_header(n);
+      if (h === null) continue;
+      if (h.settings&MSG_DELETE) continue;
+      if (this.is_local_message(h)) continue;
+      hh = h;
+    }
+    mb.close();
+    return hh;
+  },
+
+  /**
+   * Returns the header of the first local message following the one provided
+   * @param {string} s A sub-board's internal code
+   * @param {object} h A message header
+   * @returns {(object|undefined)} A message header, or undefined
+   */
+  first_local_message_since : function (s, h) {
+    var hh;
+    var hhh;
+    const mb = new MsgBase(s);
+    mb.open();
+    for (var n = h.number; n < mb.last_msg; n++) {
+      hhh = mb.get_msg_header(n);
+      if (hhh === null) continue;
+      if (hhh.settings&MSG_DELETE) continue;
+      if (!this.is_local_message(hhh)) continue;
+      hh = hhh;
+      break;
+    }
+    mb.close();
+    return hh;
   }
 
 };
